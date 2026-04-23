@@ -1,0 +1,2 @@
+appointment_id,patient_id,doctor_id,date,time_slot,status
+1,1,1,15-04-2025,09:00,completed

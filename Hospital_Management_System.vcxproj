@@ -125,6 +125,16 @@
   <ItemGroup>
     <ClCompile Include="Backend.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="admin.txt" />
+    <Text Include="appointments.txt" />
+    <Text Include="bills.txt" />
+    <Text Include="discharged.txt" />
+    <Text Include="doctors.txt" />
+    <Text Include="patients.txt" />
+    <Text Include="prescriptions.txt" />
+    <Text Include="security_log.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

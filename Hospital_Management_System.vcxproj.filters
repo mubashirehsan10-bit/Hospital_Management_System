@@ -19,4 +19,14 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="patients.txt" />
+    <Text Include="doctors.txt" />
+    <Text Include="admin.txt" />
+    <Text Include="appointments.txt" />
+    <Text Include="prescriptions.txt" />
+    <Text Include="bills.txt" />
+    <Text Include="security_log.txt" />
+    <Text Include="discharged.txt" />
+  </ItemGroup>
 </Project>
