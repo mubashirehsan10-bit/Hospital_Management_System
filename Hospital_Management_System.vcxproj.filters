@@ -18,15 +18,31 @@
     <ClCompile Include="Backend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HospitalException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="patients.txt" />
-    <Text Include="doctors.txt" />
-    <Text Include="admin.txt" />
-    <Text Include="appointments.txt" />
-    <Text Include="prescriptions.txt" />
-    <Text Include="bills.txt" />
-    <Text Include="security_log.txt" />
-    <Text Include="discharged.txt" />
+    <ClInclude Include="HospitalException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileNotFoundException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InsufficientFundsException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InvalidInputException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SlotUnavailableException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

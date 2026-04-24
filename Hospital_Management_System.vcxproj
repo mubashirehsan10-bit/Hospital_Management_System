@@ -124,16 +124,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Backend.cpp" />
+    <ClCompile Include="HospitalException.cpp" />
+    <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="admin.txt" />
-    <Text Include="appointments.txt" />
-    <Text Include="bills.txt" />
-    <Text Include="discharged.txt" />
-    <Text Include="doctors.txt" />
-    <Text Include="patients.txt" />
-    <Text Include="prescriptions.txt" />
-    <Text Include="security_log.txt" />
+    <ClInclude Include="FileNotFoundException.h" />
+    <ClInclude Include="HospitalException.h" />
+    <ClInclude Include="InsufficientFundsException.h" />
+    <ClInclude Include="InvalidInputException.h" />
+    <ClInclude Include="SlotUnavailableException.h" />
+    <ClInclude Include="utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
