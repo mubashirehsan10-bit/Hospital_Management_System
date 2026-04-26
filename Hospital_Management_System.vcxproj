@@ -125,15 +125,19 @@
   <ItemGroup>
     <ClCompile Include="Backend.cpp" />
     <ClCompile Include="HospitalException.cpp" />
+    <ClCompile Include="Person.cpp" />
     <ClCompile Include="utility.cpp" />
+    <ClCompile Include="Validator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileNotFoundException.h" />
     <ClInclude Include="HospitalException.h" />
     <ClInclude Include="InsufficientFundsException.h" />
     <ClInclude Include="InvalidInputException.h" />
+    <ClInclude Include="Person.h" />
     <ClInclude Include="SlotUnavailableException.h" />
     <ClInclude Include="utility.h" />
+    <ClInclude Include="Validator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
