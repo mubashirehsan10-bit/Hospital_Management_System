@@ -13,6 +13,7 @@ protected:
 public:
     Person(int id, const char* name, const char* contact,
         const char* password, int age, char gender);
+    // returning *this for chaining to make code modualr and for cascuading effect
     Person& setId(int n);
     int getId() const;
     Person& setName(const char* n);
@@ -25,8 +26,8 @@ public:
     int getAge() const;
     Person& setGender(char g);
     char getGender() const;
-    virtual void display() const = 0;
-    virtual const char* getRole() const = 0;
+    virtual void display() const = 0;  //1st pure virtual 
+    virtual const char* getRole() const = 0;  // 2nd pure virtual
     ~Person();
 };
 

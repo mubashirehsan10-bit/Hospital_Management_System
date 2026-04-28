@@ -1,0 +1,39 @@
+#include "Patient.h"
+
+Patient::Patient(int id, const char* name, const char* contact,
+    const char* password, int age, char gender, float balance)
+    :Person(id,name,contact,password,age,gender)
+{
+    this->balance = balance;
+}
+Patient::Patient(const Patient& p):Person(p)
+{
+    balance = p.balance;
+}
+float Patient::getBalance() const { return balance; }
+Patient& Patient::setBalance(float b) { balance = b; return *this; }
+Patient& Patient::operator+=(float amount) { balance += amount; return *this; }
+Patient& Patient::operator-=(float amount) { balance -= amount; return *this; }
+bool Patient::operator==(const Patient& p) const
+{
+    return id == p.id;
+}
+ostream& operator<<(ostream& os, const Patient& p)
+{
+    os << "\n======Patient(" << p.getName() << ") Details======";
+    os << "\nID: " << p.getId();
+    os << "\nContact: " << p.getContact();
+    os << "\nAge: " << p.getAge();
+    os << "\nGender: " << p.getGender();
+    os << "\nBalance: " << p.getBalance() << endl;
+
+    return os;
+}
+void Patient::display() const 
+{
+    cout << *this;
+}
+const char* Patient::getRole() const
+{
+    return "Patient";
+}
