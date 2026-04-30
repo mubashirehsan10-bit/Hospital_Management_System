@@ -51,6 +51,7 @@ bool Validator::isValidTimeSlot(const char* slot)
 	if (mystrlen(slot) != 5)
 		return false;
 
+    // checking all time slots
 	return (((slot[0] == '0' && slot[1] == '9') or (slot[0] == '1' && slot[1] == '0') or
 		(slot[0] == '1' && slot[1] == '1')
 		or (slot[0] == '1' && slot[1] == '2') or (slot[0] == '1' && slot[1] == '3')
@@ -63,12 +64,14 @@ bool Validator::isValidContact(const char* contact)
 	bool flag = false;
 	if (mystrlen(contact) == 11)
 		flag = true;
+
 	int i = 0;
 	while (contact[i] != '\0') {
 		if (contact[i] < '0' or contact[i]>'9')
 			flag = false;
 		i++;
 	}
+
 	return flag;
 }
 bool Validator::isValidPassword(const char* password)

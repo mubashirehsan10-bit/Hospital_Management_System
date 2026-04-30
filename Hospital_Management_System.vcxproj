@@ -123,14 +123,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Appointment.cpp" />
     <ClCompile Include="Backend.cpp" />
+    <ClCompile Include="Bill.cpp" />
     <ClCompile Include="HospitalException.cpp" />
     <ClCompile Include="Patient.cpp" />
     <ClCompile Include="Person.cpp" />
+    <ClCompile Include="Prescription.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="Validator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Appointment.h" />
+    <ClInclude Include="Bill.h" />
     <ClInclude Include="Doctor.h" />
     <ClInclude Include="FileNotFoundException.h" />
     <ClInclude Include="HospitalException.h" />
@@ -138,7 +143,9 @@
     <ClInclude Include="InvalidInputException.h" />
     <ClInclude Include="Patient.h" />
     <ClInclude Include="Person.h" />
+    <ClInclude Include="Prescription.h" />
     <ClInclude Include="SlotUnavailableException.h" />
+    <ClInclude Include="Storage.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="Validator.h" />
   </ItemGroup>
