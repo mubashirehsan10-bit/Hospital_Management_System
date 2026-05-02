@@ -34,7 +34,7 @@ int mystrcmp(const char* a, const char* b)
 	}
 	return 0;  // all characters matched
 }
-char mytolower(char c)
+char mytolower(char c) // lower case conversion
 {
 	if (c >= 65 && c <= 90)
 		return c + 32;
@@ -51,7 +51,7 @@ int power(int num, int raised)
 	return rslt;
 
 }
-int myatoi(const char* s)
+int myatoi(const char* s) // string to intiger
 {
 	int num = 0;
 
@@ -63,7 +63,7 @@ int myatoi(const char* s)
 	return num;
 }
 
-float myatof(const char* s)
+float myatof(const char* s) // string to number
 {
 	int i = 0;
 	float num1 = 0;
@@ -92,6 +92,7 @@ float myatof(const char* s)
 
 	return num1 + num2;
 }
+// ignoring upper and lower case
 int mystrcmpIgnoreCase(const char* a, const char* b)
 {
 	int i = 0;
@@ -103,6 +104,7 @@ int mystrcmpIgnoreCase(const char* a, const char* b)
 	}
 	return 0;
 }
+// connvert intiger to string
 void myitoa(int num, char* s)
 {
 	if (num == 0) { s[0] = '0'; s[1] = '\0'; return; } // returns nothing if already zero
@@ -119,6 +121,7 @@ void myitoa(int num, char* s)
 		s[j] = temp[len - j - 1];
 	s[len] = '\0';
 }
+// float to string
 void myftoa(float num, char* s, int decimals = 2)
 {
 	int intPart = (int)num;
@@ -141,4 +144,26 @@ void myftoa(float num, char* s, int decimals = 2)
 		s[mystrlen(s)] = '\0';
 		decPart -= digit;
 	}
+}
+// read one line manually without string
+void myreadLine(std::ifstream& fin, char* buffer, int maxSize)
+{
+	int i = 0;
+	char c;
+	while (fin.get(c) && c != '\n' && i < maxSize - 1)
+	{
+		buffer[i++] = c;
+	}
+	buffer[i] = '\0';
+}
+// extract next token until comma or end
+void getToken(const char* line, char* token, int& pos)
+{
+	int i = 0;
+	while (line[pos] != ',' && line[pos] != '\0' && line[pos] != '\n')
+	{
+		token[i++] = line[pos++];
+	}
+	token[i] = '\0';
+	if (line[pos] == ',') pos++; // skip comma
 }

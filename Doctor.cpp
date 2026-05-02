@@ -2,8 +2,8 @@
 #include "Doctor.h"
 
 Doctor::Doctor(int id, const char* name, const char* contact,
-	const char* password, int age, char gender, const char* spec, float fees)
-	:Person(id, name, contact, password, age, gender)
+	const char* password, const char* spec, float fees)
+	:Person(id, name, contact, password)
 {
 	specialization = new char[mystrlen(spec) + 1];
 	mystrcpy(specialization, spec);

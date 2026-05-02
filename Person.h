@@ -11,8 +11,8 @@ protected:
     int age;
     char gender;
 public:
-    Person(int id, const char* name, const char* contact,
-        const char* password, int age, char gender);
+    Person(int id, const char* name, const char* contact =" ",
+        const char* password, int age = 0, char gender = ' ');
     // returning *this for chaining to make code modualr and for cascuading effect
     Person& setId(int n);
     int getId() const;

@@ -11,7 +11,7 @@ private:
 	float fees;
 public:
 	Doctor(int id, const char* name, const char* contact,
-		const char* password, int age, char gender, const char* spec,float fees);
+		const char* password, const char* spec,float fees);
 	Doctor(const Doctor& d);
 	char* getSpecialization() const;
 	float getFees() const;

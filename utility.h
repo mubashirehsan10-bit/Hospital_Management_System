@@ -1,5 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
+#include<fstream>
 
 int mystrlen(const char* s);
 void mystrcpy(char* dest, const char* src);
@@ -11,6 +12,7 @@ float myatof(const char* s);
 int mystrcmpIgnoreCase(const char* a, const char* b);
 void myitoa(int num, char* s);
 void myftoa(float num, char* s, int decimals = 2);
-
+void myreadLine(std::ifstream& fin, char* buffer, int maxSize);
+void getToken(const char* line, char* token, int& pos);
 
 #endif

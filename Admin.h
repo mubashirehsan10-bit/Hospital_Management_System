@@ -7,8 +7,8 @@ using namespace std;
 class Admin : public Person
 {
 public:
-	Admin(int id, const char* name, const char* contact,
-		const char* password, int age, char gender);
+	Admin(int id, const char* name,
+		const char* password);
 	Admin(const Admin& a);
 	bool operator==(const Admin& a) const;
 	friend ostream& operator<<(ostream& os, const Admin& a);

@@ -1,7 +1,7 @@
 #include "Admin.h"
 
-Admin::Admin(int id, const char* name, const char* contact,
-	const char* password, int age, char gender):Person(id,name,contact,password,age,gender){ }
+Admin::Admin(int id, const char* name,
+	const char* password):Person(id,name,password){ }
 Admin::Admin(const Admin& a):Person(a){}
 bool Admin::operator==(const Admin& a) const
 {
