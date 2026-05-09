@@ -18,6 +18,8 @@ public:
 	Appointment(int Aid = 0, int Pid = 0, int Did = 0, const char* d = "",
 		const char* ts = "", const char* stat = "no-show");
     Appointment(const Appointment& s);
+	Appointment& operator=(const Appointment& s);
+
 	int getPatientId() const;
 	int getDoctorId() const;
 	Appointment& setAppointmentId(int id);

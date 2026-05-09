@@ -119,30 +119,27 @@ void FileHandler::loadAdmin(Admin*& admin) // just 1 admin that's why pointer
 
 	myreadLine(fin, line, 500); //  skip attributed line line
 
-	while (!fin.eof())
-	{
-		//admin_id, name, password
+	//admin_id, name, password
 
-		myreadLine(fin, line, 500);
-		if (mystrlen(line) == 0) continue; // skip empty lines
+	myreadLine(fin, line, 500);
 
-		char token[100]; // chunk of comlete line
-		int pos = 0; // position of string
+	char token[100]; // chunk of comlete line
+	int pos = 0; // position of string
 
-		getToken(line, token, pos);
-		int id = myatoi(token); // getting id
+	getToken(line, token, pos);
+	int id = myatoi(token); // getting id
 
-		char name[100];
-		getToken(line, token, pos); // name extraction
-		mystrcpy(name, token);
+	char name[100];
+	getToken(line, token, pos); // name extraction
+	mystrcpy(name, token);
 
-		char pass[100];
-		getToken(line, token, pos); // password extraction
-		mystrcpy(pass, token);
+	char pass[100];
+	getToken(line, token, pos); // password extraction
+	mystrcpy(pass, token);
 
-		admin = new Admin(id, name,pass); // singular existance in whole system
+	admin = new Admin(id, name,pass); // singular existance in whole system
 
-	}
+	
 }
 void FileHandler::loadAppointments(Storage<Appointment>& storage)
 {
@@ -355,8 +352,8 @@ void FileHandler::appendAppointment(const Appointment& a)
 	// convert numbers to strings
 	char Aid[10], Pid[20], Did[20];
 	myitoa(a.getAppointmentId(), Aid);
-	myftoa(a.getPatientId(), Pid);
-	myftoa(a.getDoctorId(), Did);
+	myitoa(a.getPatientId(), Pid);
+	myitoa(a.getDoctorId(), Did);
 
 
 	// write comma separated
@@ -382,7 +379,7 @@ void FileHandler::appendBill(const Bill& b)
 	myitoa(b.getId(), Bid);
 	myitoa(b.getPatientId(), Pid);
 	myitoa(b.getAppointmentId(), Aid);
-	myitoa(b.getAmount(), amnt);
+	myftoa(b.getAmount(), amnt);
 
 	// write comma separated
 	fout << Bid << ","
@@ -529,7 +526,7 @@ void FileHandler::updateAppointment(int id, const Appointment& a)
 			char aid[10], pid[10], did[20];
 			myitoa(a.getAppointmentId(), aid);
 			myitoa(a.getPatientId(), pid);
-			myftoa(a.getDoctorId(), did);
+			myitoa(a.getDoctorId(), did);
 			fout << aid << "," << pid << "," << did 
 				<< a.getAppointmentDate() << ","
 				<< a.getAppointmentSlot() << ","
@@ -572,7 +569,7 @@ void FileHandler::updateBill(int id, const Bill& b)
 			char bid[10], pid[10], aid[20], amnt[20];
 			myitoa(b.getId(), bid);
 			myitoa(b.getPatientId(), pid);
-			myftoa(b.getAppointmentId(), aid);
+			myitoa(b.getAppointmentId(), aid);
 			myftoa(b.getAmount(), amnt);
 			fout << bid << "," << pid << "," << aid << "," << amnt
 				<< b.getStatus() << ","

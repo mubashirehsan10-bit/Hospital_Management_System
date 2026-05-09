@@ -19,6 +19,28 @@ bill_id(b.bill_id), patient_id(b.patient_id), amount(b.amount)
 	date = new char[mystrlen(b.date) + 1];
 	mystrcpy(date, b.date);
 }
+Bill& Bill::operator=(const Bill& b)
+{
+	if (this == &b)return *this;
+
+	appointment_id = b.appointment_id;
+	bill_id = b.bill_id; 
+	patient_id = b.patient_id;
+	amount = b.amount;
+
+	delete[] status;
+	delete[] date;
+
+	status = new char[mystrlen(b.status) + 1];
+	mystrcpy(status, b.status);
+
+	date = new char[mystrlen(b.date) + 1];
+	mystrcpy(date, b.date);
+
+	return *this;
+}
+
+
 Bill& Bill::setStatus(const char* s)
 {
 	delete[] status;

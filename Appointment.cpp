@@ -31,6 +31,32 @@ Appointment::Appointment(const Appointment& s)
 	status = new char[mystrlen("Pending") + 1]; // status
 	mystrcpy(status, "Pending");
 }
+Appointment& Appointment::operator=(const Appointment& s)
+{
+	if (this == &s) return *this;
+
+	appointment_id = s.appointment_id;
+	patient_id = s.patient_id;
+	doctor_id = s.doctor_id;
+
+	delete[] date;
+	delete[] time_slot;
+	delete[] status;
+
+	date = new char[mystrlen(s.date) + 1]; // new date
+	mystrcpy(date, s.date);
+
+	time_slot = new char[mystrlen(s.time_slot) + 1]; // new time slot
+	mystrcpy(time_slot, s.time_slot);
+
+	status = new char[mystrlen("Pending") + 1]; // status
+	mystrcpy(status, "Pending");
+
+	return *this;
+
+}
+
+
 Appointment& Appointment::setAppointmentStatus(const char* s)
 {
 	delete[] status;
@@ -85,9 +111,9 @@ Appointment& Appointment::changeSlot(const char* s)
 }
 Appointment::~Appointment()
 {
-	delete[] time_slot;
-	delete[] status;
-	delete[] date;
+	if (date != nullptr) { delete[] date; date = nullptr; }
+	if (time_slot != nullptr) { delete[] time_slot; time_slot = nullptr; }
+	if (status != nullptr) { delete[] status; status = nullptr; }
 }
 ostream& operator<<(ostream& os, const Appointment& a)
 {

@@ -1,8 +1,17 @@
 #include "Admin.h"
 
 Admin::Admin(int id, const char* name,
-	const char* password):Person(id,name,password){ }
+	const char* password):Person(id,name," ",password) { }
 Admin::Admin(const Admin& a):Person(a){}
+Admin& Admin::operator=(const Admin& d)
+{
+	if(this==&d)return *this;
+
+	Person::operator=(d);
+
+	return *this;
+}
+
 bool Admin::operator==(const Admin& a) const
 {
 	return id == a.id;

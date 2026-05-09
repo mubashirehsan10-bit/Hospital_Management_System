@@ -15,6 +15,20 @@ Doctor::Doctor(const Doctor& d) :Person(d)
 	mystrcpy(specialization, d.specialization);
 	fees = d.fees;
 }
+Doctor& Doctor::operator=(const Doctor& d)
+{
+	if (this == &d) return *this;
+
+	Person::operator=(d);  // call parent first , smae functiong as in patient.cpp
+
+	delete[] specialization;
+	specialization = new char[mystrlen(d.specialization) + 1];
+	mystrcpy(specialization, d.specialization);
+	fees = d.fees;
+
+	return *this;
+}
+
 char* Doctor::getSpecialization() const { return specialization; }
 float Doctor::getFees() const { return fees; }
 Doctor& Doctor::setSpecialization(const char* s)
@@ -34,13 +48,17 @@ ostream& operator<<(ostream& os, const Doctor& d)
 	os << "\n======Dr." << d.getName() << " Details======";
 	os << "\nID: " << d.getId();
 	os << "\nContact: " << d.getContact();
-	os << "\nAge: " << d.getAge();
-	os << "\nGender: " << d.getGender();
-	os << "\nFees: " << d.getFees();
-	os << "\nSpecialization: " << d.getSpecialization() << endl << endl;
+	os << "\nFees: " << d.getFees() << endl;
 	return os;
 
 }
 void Doctor::display() const { cout << *this; }
 const char* Doctor::getRole() const { return "Doctor"; }
-Doctor::~Doctor() { delete[] specialization; }
+Doctor::~Doctor()
+{
+	if (specialization != nullptr)
+	{
+		delete[] specialization;
+		specialization = nullptr;
+	}
+}

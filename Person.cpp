@@ -22,13 +22,40 @@ Person::Person(const Person& p)
     id = p.id;
     age = p.age;
     gender = p.gender;
+
     name = new char[mystrlen(p.name) + 1];
     mystrcpy(name, p.name);
+
     contact = new char[mystrlen(p.contact) + 1];
     mystrcpy(contact, p.contact);
+
     password = new char[mystrlen(p.password) + 1];
     mystrcpy(password, p.password);
 }
+
+Person& Person::operator=(const Person& p)
+{
+    if (this == &p)return *this;
+    delete[] name;
+    delete[] contact;
+    delete[] password;
+
+    id = p.id;
+    age = p.age;
+    gender = p.gender;
+
+    name = new char[mystrlen(p.name) + 1];
+    mystrcpy(name, p.name);
+
+    contact = new char[mystrlen(p.contact) + 1];
+    mystrcpy(contact, p.contact);
+
+    password = new char[mystrlen(p.password) + 1];
+    mystrcpy(password, p.password);
+
+}
+
+
 
 Person& Person::setId(int n) { id = n; return *this; }
 
@@ -66,7 +93,7 @@ Person& Person::setGender(char g) { gender = g; return *this; }
 char Person::getGender() const { return gender; }
 Person::~Person()
 {
-    delete[] name;
-    delete[] password;
-    delete[] contact;
+    if (name != nullptr) { delete[] name; name = nullptr; }
+    if (contact != nullptr) { delete[] contact; contact = nullptr; }
+    if (password != nullptr) { delete[] password; password = nullptr; }
 }

@@ -15,8 +15,9 @@ private:
 	char* status;
 	char* date;
 public:
-	Bill(int Aid, int Bid, int Pid, float am,const char* st, const char* d);
+	Bill(int Aid = 0, int Bid = 0, int Pid = 0, float am =0.0f,const char* st = "", const char* d = "");
 	Bill(const Bill& b);
+	Bill& operator=(const Bill& b);
 	Bill& setStatus(const char* s);
 	Bill& setAmount(float amount);
     Bill& setAppointmentId(int id);

@@ -7,9 +7,10 @@ using namespace std;
 class Admin : public Person
 {
 public:
-	Admin(int id, const char* name,
-		const char* password);
+	Admin(int id = 0, const char* name = "",
+		const char* password = "");
 	Admin(const Admin& a);
+	Admin& operator=(const Admin& d);
 	bool operator==(const Admin& a) const;
 	friend ostream& operator<<(ostream& os, const Admin& a);
 	void display() const override;

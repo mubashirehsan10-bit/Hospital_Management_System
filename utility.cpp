@@ -4,16 +4,25 @@
 int mystrlen(const char* s)
 {
 	int i = 0;
-	while (s[i] != '\0') i++; // length calc
-	return i;
+	if (s != nullptr) {
+		while (s[i] != '\0') i++; // length calc
+		return i;
+	}
+	else
+		return 0;
 }
 void mystrcpy(char* dest, const char* src)
 {
+	if (dest == nullptr || src == nullptr) return;
+
 	int i = 0;
 	while (src[i] != '\0') { dest[i] = src[i]; i++; } //copy to copy
 	dest[i] = '\0';
 }
 void mystrcat(char* dest, const char* src) { 
+	
+	if (dest == nullptr || src == nullptr) return;
+	
 	int i = 0;
 	int size = mystrlen(dest);
 	while (src[i] != '\0')
@@ -25,6 +34,10 @@ void mystrcat(char* dest, const char* src) {
 }
 int mystrcmp(const char* a, const char* b)
 {
+	if (a == nullptr && b == nullptr) return 0;  //  add this
+	if (a == nullptr) return -1;
+	if (b == nullptr) return 1;
+
 	int i = 0;
 	while (a[i] != '\0' || b[i] != '\0')
 	{
@@ -122,7 +135,7 @@ void myitoa(int num, char* s)
 	s[len] = '\0';
 }
 // float to string
-void myftoa(float num, char* s, int decimals = 2)
+void myftoa(float num, char* s, int decimals)
 {
 	int intPart = (int)num;
 	float decPart = num - intPart;

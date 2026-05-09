@@ -18,6 +18,7 @@ public:
 	Prescription(int Pid = 0, int Aid = 0, int Ptid = 0,int Did=0 , const char* d = "",
 		const char* md = "", const char* n = "");
 	Prescription(const Prescription& s);
+	Prescription& operator=(const Prescription& s);
 	
 	Prescription& setPrescriptionId(int id);
 	Prescription& setAppointmentId(int id);

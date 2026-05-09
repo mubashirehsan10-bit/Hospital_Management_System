@@ -5,11 +5,23 @@ template <class T>
 class Storage
 {
 private:
-	T data[100];
-	int count;
-   
+    T* data;      // pointer instead of array
+    int count;
 public:
-    Storage() { count = 0; }
+    Storage(int t = 0)
+    {
+        count = t;
+        data = new T[100];  // allocate on heap
+    }
+
+    Storage(const Storage& other)
+    {
+        count = other.count;
+        data = new T[100];
+        for (int i = 0; i < count; i++)
+            data[i] = other.data[i];
+    }
+
     void add(const T& item)
     {
         if (count >= 100) return;
@@ -26,7 +38,7 @@ public:
                 }
                 count--;
             }
-            
+
         }
     }
     T* findByID(int id)
@@ -35,7 +47,7 @@ public:
             if (data[i].getId() == id)
                 return &data[i];
         return nullptr;
-  
+
     }
     T* getAll()
     {
@@ -46,5 +58,11 @@ public:
         return count;
     }
 
+    ~Storage()
+    {
+        delete[] data;  // free heap memory
+    }
+
+    // everything else stays same
 };
 #endif // !STORAGE_H

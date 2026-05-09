@@ -29,6 +29,30 @@ Prescription::Prescription(const Prescription& s)
 	notes = new char[mystrlen(s.notes) + 1];
 	mystrcpy(notes, s.notes);
 }
+Prescription& Prescription::operator=(const Prescription& s)
+{
+	if (this == &s)return *this;
+
+	prescription_id = s.prescription_id;
+	appointment_id = s.appointment_id;
+	patient_id = s.patient_id;
+	doctor_id = s.doctor_id;
+
+	delete[] date;
+	delete[] medicine;
+	delete[] notes;
+
+	date = new char[mystrlen(s.date) + 1];
+	mystrcpy(date, s.date);
+
+	medicine = new char[mystrlen(s.medicine) + 1];
+	mystrcpy(medicine, s.medicine);
+
+	notes = new char[mystrlen(s.notes) + 1];
+	mystrcpy(notes, s.notes);
+
+	return *this;
+}
 
 Prescription& Prescription::setPrescriptionId(int id)
 {
@@ -85,9 +109,9 @@ char* Prescription::getPrescriptionNotes() const { return notes; }
 
 Prescription::~Prescription()
 {
-	delete[] notes;
-	delete[] medicine;
-	delete[] date;
+	if (notes != nullptr) { delete[] notes; }
+	if (medicine != nullptr) { delete[] medicine; }
+	if (date != nullptr) { delete[] date; }
 }
 
 ostream& operator<<(ostream& os, const Prescription& a)

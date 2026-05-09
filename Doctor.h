@@ -10,9 +10,10 @@ private:
 	char* specialization;
 	float fees;
 public:
-	Doctor(int id, const char* name, const char* contact,
-		const char* password, const char* spec,float fees);
+	Doctor(int id = 0, const char* name = 0, const char* contact = "",
+		const char* password = "", const char* spec = "", float fees = 0.0f);
 	Doctor(const Doctor& d);
+	Doctor& operator=(const Doctor& d);
 	char* getSpecialization() const;
 	float getFees() const;
 	Doctor& setSpecialization(const char* s);
