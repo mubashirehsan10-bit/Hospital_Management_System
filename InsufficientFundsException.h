@@ -2,9 +2,9 @@
 #define INSUFFICIENTFUNDSEXCEPTION_H
 #include "HospitalException.h"
 
-class InsufficentFundsException : public HospitalException {
+class InsufficientFundsException : public HospitalException {
 public:
-    InsufficentFundsException(const char* msg) : HospitalException(msg) {}
+    InsufficientFundsException(const char* msg) : HospitalException(msg) {}
 };
 
 #endif

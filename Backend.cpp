@@ -16,6 +16,8 @@
 #include "SlotUnavailableException.h"
 #include <iostream>
 #include <ctime>
+using namespace std;
+
 int getChoice(Validator& validator, int min, int max = 100)
 {
     char input[20];
@@ -152,7 +154,7 @@ void displayPatient(Patient* p)
     cout << "\nWelcome, " << p->getName() << endl;
     cout << "Balance:  PKR" << p->getBalance() << endl;
 }
-
+// 1
 void BookAppointment(Validator& v,FileHandler& fh,Patient* p,Storage<Bill>& b,Storage<Doctor>& d,Storage<Appointment>& a)
 {
     char variable[50];
@@ -283,9 +285,9 @@ void BookAppointment(Validator& v,FileHandler& fh,Patient* p,Storage<Bill>& b,St
     else
     {
         try {
-            throw InsufficentFundsException("Insufficent Balance");
+            throw InsufficientFundsException("Insufficent Balance");
         }
-        catch (InsufficentFundsException& e)
+        catch (InsufficientFundsException& e)
         {
             cout << e.what() << endl;
             return;
@@ -308,7 +310,7 @@ void BookAppointment(Validator& v,FileHandler& fh,Patient* p,Storage<Bill>& b,St
     cout << "Appointment ID: " << newId << endl << endl;
 
 }
-
+// 2
 void CancelAppointment(Validator& v,Storage<Doctor>& d,FileHandler& fh,Patient* p,Storage<Bill>& b,Storage<Appointment>& a)
 {
     Appointment* appointment = a.getAll();
@@ -343,41 +345,485 @@ void CancelAppointment(Validator& v,Storage<Doctor>& d,FileHandler& fh,Patient* 
             fh.updateAppointment(appointment[i].getAppointmentId(),a);
             Doctor* doc = d.getAll();
             int Did;
-            for (int j = 0; j < d.size(); j++)
-            {
-                if (doc[j].getId() == appointment[i].getDoctorId())
-                {
-                    Doctor* selectedDoc = d.findByID(appointment[i].getDoctorId());
-                    *p += selectedDoc->getFees();
-                    Patient pat(appointment[i].getPatientId(), p->getName(), p->getContact(),
-                        p->getPassword(), p->getAge(), p->getGender(), p->getBalance());
-                    fh.updatePatient(p->getId(), pat);
+            
+            Doctor* selectedDoc = d.findByID(appointment[i].getDoctorId());
+            if (selectedDoc != nullptr) {
+                *p += selectedDoc->getFees();
+                Patient pat(appointment[i].getPatientId(), p->getName(), p->getContact(),
+                    p->getPassword(), p->getAge(), p->getGender(), p->getBalance());
+                fh.updatePatient(p->getId(), pat);
 
-                    Bill* selectedBill = b.findByID(id);
-                    if (selectedBill != nullptr)
-                    {
-                        Bill updatedBill = *selectedBill;
-                        updatedBill.setStatus("Cancelled");
-                        fh.updateBill(selectedBill->getId(), updatedBill);
-                    }
+                Bill* selectedBill = b.findByID(id);
+                if (selectedBill != nullptr)
+                {
+                    Bill updatedBill = *selectedBill;
+                    updatedBill.setStatus("Cancelled");
+                    fh.updateBill(selectedBill->getId(), updatedBill);
                     cout << "Appointment cancelled. PKR " << selectedDoc->getFees() <<
                         " refunded to your balance.\n\n";
                     checking = true;
                     break;
                 }
+                
             }
+            else
+                cout << "No Such Doctor Exists!!!\n";
+                
         }
-        if (!checking)
-        {
-            cout << "Invalid appointment ID.\n";
-            return;
-        }
+        
+    }
+    if (!checking)
+    {
+        cout << "Invalid appointment ID.\n";
+        return;
+    }
+
+}
+// extract year, month, day from "DD-MM-YYYY"
+int getYear(const char* date) { return myatoi(date + 6); }  // chars 6-9
+int getMonth(const char* date) { return myatoi(date + 3); }  // chars 3-4
+int getDay(const char* date) { return myatoi(date); } 
+bool isDateBefore(const char* d1, const char* d2)
+{
+    if (getYear(d1) != getYear(d2))   return getYear(d1) < getYear(d2);
+    if (getMonth(d1) != getMonth(d2)) return getMonth(d1) < getMonth(d2);
+    return getDay(d1) < getDay(d2);
+}
+// 3
+void ViewMyAppointments(Storage<Appointment>& a,Patient* p)
+{
+    Appointment* appointment = a.getAll();
+    Appointment patientAppts[100]; // create a copy so original data remain unchanged
+    int count = 0;
+    for (int i = 0; i < a.size(); i++)
+        if (p->getId() == appointment[i].getPatientId())
+            patientAppts[count++] = appointment[i];
+    
+    for (int i = 0; i < count - 1; i++)
+        for (int j = 0; j < count - i - 1; j++)
+            if (isDateBefore(patientAppts[j + 1].getAppointmentDate(),
+                patientAppts[j].getAppointmentDate()))
+            {
+                // swap
+                Appointment temp = patientAppts[j];
+                patientAppts[j] = patientAppts[j + 1];
+                patientAppts[j + 1] = temp;
+            }
+
+    bool checking = false;
+    cout << "\n=====List of Patient Pending Appointments=====\n";
+    for (int i = 0; i < count; i++)
+    {
+            cout << patientAppts[i];
+            checking = true;
+    }
+    if (!checking)
+    {
+        cout << "\nYou have no pending appointments.\n";
+        return;
     }
     
 
 }
+// 4
+void ViewMyMedicalRecords(Storage<Prescription>& p,Patient* pat)
+{
+    Prescription* prescription = p.getAll();
+    Prescription Selectedpres[100];
+    int count = 0;
 
-using namespace std;
+    bool flag = false;
+    for (int i = 0; i < p.size(); i++)
+        if (pat->getId() == prescription[i].getPatientId()) {
+            Selectedpres[count++] = prescription[i];
+            flag = true;
+        }
+    if (!flag) {
+        cout << "No medical records found.\n";
+        return;
+    }
+
+    // sort
+    for (int i = 0; i < count - 1; i++)
+        for (int j = 0; j < count-i-1; j++)
+            if (isDateBefore(Selectedpres[j].getPrescriptionDate(), // via decending
+                Selectedpres[j + 1].getPrescriptionDate()))
+            {
+                Prescription temp = Selectedpres[j];
+                Selectedpres[j] = Selectedpres[j + 1];
+                Selectedpres[j + 1] = temp;
+            }
+    // display sorted
+    for (int i = 0; i < count; i++)
+    {
+        cout << Selectedpres[i];
+    }
+
+}
+// 5
+void ViewMyBills(Storage<Bill>& bills,Patient* p)
+{
+    Bill* b = bills.getAll();
+    float totalBill = 0.0f;
+
+    bool flag = false;
+    // printing bills
+    for (int i = 0; i < bills.size(); i++)
+    {
+        if (p->getId() == b[i].getPatientId())
+        {
+            cout << b[i];
+            flag = true;
+            if (mystrcmpIgnoreCase(b[i].getStatus(), "unpaid") == 0)
+                totalBill += b[i].getAmount();
+        }
+    }
+    if (!flag)
+    {
+        cout << "No bills found.\n";
+        return;
+    }
+    
+    // display total amount
+
+    cout << "The Total Outstanding UNPAID amount: " << totalBill << endl << endl;
+
+}
+//6. Pay Bill
+void PayBill(Validator& v,Storage<Bill>& bills, Patient* p,FileHandler& fh)
+{
+    Bill* b = bills.getAll();
+    Bill Unpaid[100];
+    int count = 0;
+
+    bool flag = false;
+    // printing bills
+    for (int i = 0; i < bills.size(); i++)
+    {
+        if (p->getId() == b[i].getPatientId())
+        {
+            flag = true;
+            if (mystrcmpIgnoreCase(b[i].getStatus(), "unpaid") == 0)
+            {
+                cout << b[i];
+                Unpaid[count++] = b[i];
+            }
+        }
+    }
+    if (count == 0)
+    {
+        cout << "No unpaid bills.\n";
+        return;
+    }
+
+    cout << "Enter Bill id to pay: ";
+    int id = getChoice(v, 1);
+
+    flag = false;
+    for (int i = 0; i < count; i++)
+    {
+        try {
+            if (Unpaid[i].getId() == id)
+            {
+                if (Unpaid[i].getAmount() <= p->getBalance()) {
+                    *p -= Unpaid[i].getAmount();
+                    Bill bil(Unpaid[i].getId(), Unpaid[i].getPatientId(), Unpaid[i].getAppointmentId(),
+                        Unpaid[i].getAmount(), "Paid", Unpaid[i].getAppointmentDate());
+                    fh.updateBill(Unpaid[i].getId(), bil);
+                    Patient pa(p->getId(), p->getName(), p->getContact(), p->getPassword(),
+                        p->getAge(), p->getGender(), p->getBalance());
+                    fh.updatePatient(p->getId(),pa);
+                    cout << "Bill paid successfully. Remaining balance: PKR " << p->getBalance() << "\n";
+
+                    flag = true;
+                }
+                else
+                    throw InsufficientFundsException("Balnce is infufficent to Pay Bill");
+            }
+        }
+        catch (InsufficientFundsException& e)
+        {
+            cout << e.what() << endl;
+            return;
+        }
+    }
+    if (!flag)
+    {
+        cout << "Invalid Bill id!!\n";
+        return;
+    }
+
+
+}
+//7. Top Up Balance
+void TopUpBalance(Validator& v,FileHandler& fh,Patient* p)
+{
+    int attempts = 0;
+    while (attempts != 3) {
+        try {
+            cout << "Enter amount to add (PKR): ";
+            float amount;
+            cin >> amount;
+            if (!v.isValidFloat(amount))
+            {
+                throw InvalidInputException("Amount should be +ve");
+                attempts++;
+            }
+            else {
+                *p += amount;
+                Patient pa(p->getId(), p->getName(), p->getContact(), p->getPassword(),
+                    p->getAge(), p->getGender(), p->getBalance());
+                fh.updatePatient(p->getId(), pa);
+                cout << "Balance updated.New balance : PKR" << p->getBalance() << endl << endl;
+                attempts = 3;
+                return;
+            }
+        }
+        catch (InvalidInputException& e)
+        {
+            cout << e.what() << endl;
+            cout << 3 - attempts << " Attempts Reamaining!!\n";
+        }
+        if (attempts == 3)
+        {
+            return;
+        }
+    }
+
+}
+//=======================================================================
+
+Doctor* loginDoctor(Validator validator, Storage<Doctor>& d)
+{
+    char password[20];
+    int id = 1;
+    int attempts = 0;
+
+    while (attempts <= 3)
+    {
+
+        do
+        {
+            cout << "Enter vaild ID: ";
+            id = getChoice(validator, id);
+            cin.ignore();
+        } while (!validator.isValidID(id));
+
+        do {
+            cout << "Enter Password: ";
+            cin.getline(password, 20);
+        } while (!validator.isValidPassword(password));
+
+        Doctor* doctor = d.findByID(id);
+
+        if (doctor == nullptr)
+        {
+            cout << "Doctor with this ID Not Found!!!\n";
+            attempts++;
+            cout << 3 - attempts << " Attempts remaining!!\n";
+            continue;
+        }
+
+        if (mystrcmp(doctor->getPassword(), password) == 0)
+        {
+            cout << "Logged in successfully!!\n";
+            return doctor;
+        }
+        else
+        {
+            cout << "Invalid Password!!\n";
+            attempts++;
+            cout << 3 - attempts << " Attempts remaining!!\n";
+            continue;
+        }
+
+        cout << 3 - attempts << " Attempts remaining!!\n";
+        cout << "Account locked. Contact admin.\n";
+
+        return nullptr;
+    }
+
+}
+void displayDoctor(Doctor* d)
+{
+
+    cout << "Welcome, Dr." << d->getName() << " | Specialization: " << d->getSpecialization() << endl << endl;
+
+}
+void displayDoctorMenu()
+{
+    cout << "\n===============================================\n";
+    cout << "1. View Today's Appointments\n";
+    cout << "2. Mark Appointment Complete\n";
+    cout << "3. Mark Appointment No-Show\n";
+    cout << "4. Write Prescription\n";
+    cout << "5. View Patient Medical History\n";
+    cout << "6. Logout\n\n";
+}
+
+//1. View Today's Appointments
+void getTodayDate(char* dateBuffer)
+{
+    time_t t = time(0);           // get current time
+    tm* now = localtime(&t);      // convert to local time struct
+
+    // format as DD-MM-YYYY
+    strftime(dateBuffer, 15, "%d-%m-%Y", now);
+}
+void ViewTodaysAppointments(Doctor* doc, Storage<Appointment>& a,
+    Storage<Patient>& patients)
+{
+    char today[15];
+    getTodayDate(today);
+
+    // extract today's appointments for this doctor
+    Appointment todayAppts[100];
+    int count = 0;
+
+    Appointment* all = a.getAll();
+    for (int i = 0; i < a.size(); i++)
+    {
+        if (all[i].getDoctorId() == doc->getId() &&
+            mystrcmp(all[i].getAppointmentDate(), today) == 0)
+        {
+            todayAppts[count++] = all[i];
+        }
+    }
+
+    if (count == 0)
+    {
+        cout << "No appointments scheduled for today.\n";
+        return;
+    }
+
+    // sort by time slot ascending
+    for(int i=0;i<count-1;i++)
+        for(int j=0;j<count-i-1;j++)
+            if ((mystrcmp(todayAppts[j].getAppointmentSlot(),
+                todayAppts[j + 1].getAppointmentSlot()) > 0))
+            {
+                Appointment temp = todayAppts[j];
+                todayAppts[j] = todayAppts[j + 1];
+                todayAppts[j + 1] = temp;
+            }
+
+    // display
+    for (int i = 0; i < count; i++)
+    {
+        cout << todayAppts[i];
+    }
+}
+//2. Mark Appointment Complete
+void MarkAppointmentComplete(Validator v,Doctor* doc, Storage<Appointment>& a,
+    Storage<Patient>& patients,FileHandler& fh)
+{
+    char today[15];
+    getTodayDate(today);
+
+    // extract today's appointments for this doctor
+    Appointment todayAppts[100];
+    int count = 0;
+
+    Appointment* all = a.getAll();
+    for (int i = 0; i < a.size(); i++)
+    {
+        if (all[i].getDoctorId() == doc->getId() &&
+            mystrcmp(all[i].getAppointmentDate(), today) == 0 &&
+            mystrcmpIgnoreCase(all[i].getAppointmentStatus(), "Pending") == 0)
+        {
+            todayAppts[count++] = all[i];
+        }
+    }
+
+    if (count == 0)
+    {
+        cout << "No appointments scheduled for today.\n";
+        return;
+    }
+
+    cout << "Enter Appointment ID:\n";
+    int id = getChoice(v, 1);
+    bool flag = false;
+    for (int i = 0; i < count; i++)
+    {
+        if (todayAppts[i].getAppointmentId() == id)
+        {
+            Appointment ap(todayAppts[i].getAppointmentId(), todayAppts[i].getPatientId(),
+                todayAppts[i].getDoctorId(), todayAppts[i].getAppointmentDate(),
+                todayAppts[i].getAppointmentSlot(), "Completed");
+            fh.updateAppointment(todayAppts[i].getAppointmentId(), ap);
+            cout << "Appointment marked as completed.\n";
+            flag = true;
+        }
+    }
+    if (!flag)
+        cout << "No such Appointment id exis\n";
+}
+void MarkNoShow(Validator v, Doctor* doc, Storage<Appointment>& a,
+    Storage<Patient>& patients, FileHandler& fh,Storage<Bill>& bills)
+{
+    char today[15];
+    getTodayDate(today);
+
+    // extract today's appointments for this doctor
+    Appointment todayAppts[100];
+    int count = 0;
+
+    Appointment* all = a.getAll();
+    for (int i = 0; i < a.size(); i++)
+    {
+        if (all[i].getDoctorId() == doc->getId() &&
+            mystrcmp(all[i].getAppointmentDate(), today) == 0 &&
+            mystrcmpIgnoreCase(all[i].getAppointmentStatus(), "Pending") == 0)
+        {
+            todayAppts[count++] = all[i];
+        }
+    }
+
+    if (count == 0)
+    {
+        cout << "No appointments scheduled for today.\n";
+        return;
+    }
+
+    cout << "Enter Appointment ID:\n";
+    int id = getChoice(v, 1);
+    bool flag = false;
+    
+    Bill* allBills = bills.getAll();
+
+    for (int i = 0; i < count; i++)
+    {
+        if (todayAppts[i].getAppointmentId() == id)
+        {
+            Appointment ap(todayAppts[i].getAppointmentId(), todayAppts[i].getPatientId(),
+                todayAppts[i].getDoctorId(), todayAppts[i].getAppointmentDate(),
+                todayAppts[i].getAppointmentSlot(), "no-show");
+            fh.updateAppointment(todayAppts[i].getAppointmentId(), ap);
+            for (int j = 0; j < bills.size(); j++)
+            {
+                if (allBills[j].getAppointmentId() == id)  // match by id
+                {
+                    Bill updatedBill = allBills[j];
+                    updatedBill.setStatus("cancelled");
+                    fh.updateBill(allBills[j].getId(), updatedBill);
+                    flag = true;
+                    break;
+                }
+            }
+            cout << "Appointment marked as no show.\n";
+
+        }
+    }
+    if (!flag)
+        cout << "No such Appointment id exis\n";
+}
+//4. Write Prescription
+void WritePrescription(Validator& v,Storage<Appointment>& a,Storage<Prescription>& p,Doctor* d)
+{
+
+
+}
 int main()
 {
     // Loading Data from the files
@@ -421,25 +867,96 @@ int main()
                 }
                 case 2:
                 {
-                    CancelAppointment();
+                    CancelAppointment(validator, doctors, fh, p, bills, appointments);
+                    break;
                 }
                 case 3:
                 {
+                    ViewMyAppointments(appointments, p);
+                    break;
+                }
+                case 4:
+                {
+                    ViewMyMedicalRecords(prescriptions, p);
+                    break;
+                }
+                case 5:
+                {
+                    ViewMyBills(bills, p);
+                    break;
+                }
+                case 6:
+                {
+                    PayBill(validator, bills, p, fh);
+                    break;
+                }
+                case 7:
+                {
+                    TopUpBalance(validator, fh, p);
+                    break;
+                }
+                case 8:
+                {
+                    cout << "Patient Logged Out!!\n";
+                    break;
+                }
+                }
+
+            }
+            else
+                cout << "No Such Patient Exist. Contact Admin!!\n";
+            break;
+        }
+        case 2:
+        {
+            Doctor* d = loginDoctor(validator, doctors);
+            if (d != nullptr)
+            {
+                displayDoctor(p);
+                displayDoctorMenu();
+                int dChoice = getChoice(validator, 1, 8);
+                switch (dChoice)
+                {
+
+                case 1:
+                {
 
                 }
+
+
+
+                case 2:
+
+
+
+                case 3:
+
+
+
+                case 4:
+
+                case 5:
+
+
+                case 6:
+
+
+
                 }
+
             }
 
-           
+
         }
         }
-        
+
     } while (option != 4);
-    cout << "\nThank You for using Hospital Mangament System!!!!\n";
-    if (admin != nullptr)
-    {
-        delete admin;
-        admin = nullptr;  // set to nullptr after delete
-    }
-    return 0;
+        cout << "\nThank You for using Hospital Mangament System!!!!\n";
+        if (admin != nullptr)
+        {
+            delete admin;
+            admin = nullptr;  // set to nullptr after delete
+        }
+        return 0;
+    
 }
