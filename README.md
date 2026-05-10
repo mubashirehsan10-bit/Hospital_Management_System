@@ -82,7 +82,7 @@ prescription_id,appointment_id,patient_id,doctor_id,date,medicines,notes
 | `HospitalException` | Base exception class |
 
 ## GitHub Repository
-[Insert GitHub Link Here]
+[https://github.com/mubashirehsan10-bit/Hospital_Management_System]
 
 ## Student Information
 - **Name:** [Mubashir Ehsan]
