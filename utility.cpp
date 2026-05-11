@@ -215,3 +215,14 @@ void formatTimestampFull(char* buf, int cap)
 	tm* now = &nowStruct;
 	strftime(buf, static_cast<size_t>(cap), "%d-%m-%Y %H:%M:%S", now);
 }
+
+//void getTodayDate(char* out)
+//{
+//	if (!out) return;
+//	time_t t = time(nullptr);
+//	tm nowStruct;
+//	localtime_s(&nowStruct, &t);
+//	tm* now = &nowStruct;
+//	// Format: DD-MM-YYYY
+//	std::snprintf(out, 15, "%02d-%02d-%04d", now->tm_mday, now->tm_mon + 1, now->tm_year + 1900);
+//}

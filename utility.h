@@ -12,6 +12,10 @@ float myatof(const char* s);
 int mystrcmpIgnoreCase(const char* a, const char* b);
 void myitoa(int num, char* s);
 void myftoa(float num, char* s, int decimals = 2);
+// Returns today's date as a string in DD-MM-YYYY format.
+// 'out' must have space for at least 15 chars.
+void getTodayDate(char* out);
+
 void myreadLine(std::ifstream& fin, char* buffer, int maxSize);
 void getToken(const char* line, char* token, int& pos);
 void getStandardTimeSlot(int index, char* out);

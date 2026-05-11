@@ -511,3 +511,204 @@ void med_formatUnpaidBillsAll(const Storage<Bill>& bills, const Storage<Patient>
 		med_msgCat(out, cap, line);
 	}
 }
+void med_guiMarkComplete(FileHandler& fh, Doctor* doc,
+	Storage<Appointment>& appointments, int apptId, char* msg, int msgCap)
+{
+	med_msgClear(msg, msgCap);
+	if (doc == nullptr) { med_msgCat(msg, msgCap, "No doctor session."); return; }
+
+	char today[15];
+	getTodayDate(today);
+
+	Appointment* all = appointments.getAll();
+	for (int i = 0; i < appointments.size(); i++)
+	{
+		if (all[i].getAppointmentId() == apptId &&
+			all[i].getDoctorId() == doc->getId() &&
+			mystrcmpIgnoreCase(all[i].getAppointmentStatus(), "pending") == 0 &&
+			mystrcmp(all[i].getAppointmentDate(), today) == 0)
+		{
+			Appointment updated(all[i].getAppointmentId(), all[i].getPatientId(),
+				all[i].getDoctorId(), all[i].getAppointmentDate(),
+				all[i].getAppointmentSlot(), "completed");
+			fh.updateAppointment(apptId, updated);
+			med_msgCat(msg, msgCap, "Appointment marked as completed.");
+			return;
+		}
+	}
+	med_msgCat(msg, msgCap, "Appointment not found or not eligible.");
+}
+
+void med_guiMarkNoShow(FileHandler& fh, Doctor* doc,
+	Storage<Appointment>& appointments, Storage<Bill>& bills,
+	int apptId, char* msg, int msgCap)
+{
+	med_msgClear(msg, msgCap);
+	if (doc == nullptr) { med_msgCat(msg, msgCap, "No doctor session."); return; }
+
+	char today[15];
+	getTodayDate(today);
+
+	Appointment* all = appointments.getAll();
+	for (int i = 0; i < appointments.size(); i++)
+	{
+		if (all[i].getAppointmentId() == apptId &&
+			all[i].getDoctorId() == doc->getId() &&
+			mystrcmpIgnoreCase(all[i].getAppointmentStatus(), "pending") == 0 &&
+			mystrcmp(all[i].getAppointmentDate(), today) == 0)
+		{
+			Appointment updated(all[i].getAppointmentId(), all[i].getPatientId(),
+				all[i].getDoctorId(), all[i].getAppointmentDate(),
+				all[i].getAppointmentSlot(), "no-show");
+			fh.updateAppointment(apptId, updated);
+
+			Bill* allBills = bills.getAll();
+			for (int j = 0; j < bills.size(); j++)
+			{
+				if (allBills[j].getAppointmentId() == apptId)
+				{
+					Bill ub = allBills[j];
+					ub.setStatus("cancelled");
+					fh.updateBill(allBills[j].getId(), ub);
+					break;
+				}
+			}
+			med_msgCat(msg, msgCap, "Appointment marked as no-show.");
+			return;
+		}
+	}
+	med_msgCat(msg, msgCap, "Appointment not found or not eligible.");
+}
+
+void med_guiWritePrescription(FileHandler& fh, Doctor* doc,
+	Storage<Appointment>& appointments, Storage<Prescription>& prescriptions,
+	int apptId, const char* medicines, const char* notes,
+	char* msg, int msgCap)
+{
+	med_msgClear(msg, msgCap);
+	if (doc == nullptr) { med_msgCat(msg, msgCap, "No doctor session."); return; }
+
+	Appointment* allAppts = appointments.getAll();
+	bool found = false;
+	int patientId = -1;
+	for (int i = 0; i < appointments.size(); i++)
+	{
+		if (allAppts[i].getAppointmentId() == apptId &&
+			allAppts[i].getDoctorId() == doc->getId() &&
+			mystrcmpIgnoreCase(allAppts[i].getAppointmentStatus(), "completed") == 0)
+		{
+			found = true;
+			patientId = allAppts[i].getPatientId();
+			break;
+		}
+	}
+	if (!found)
+	{
+		med_msgCat(msg, msgCap, "Appointment not found or not completed.");
+		return;
+	}
+
+	Prescription* allPres = prescriptions.getAll();
+	for (int i = 0; i < prescriptions.size(); i++)
+	{
+		if (allPres[i].getAppointmentId() == apptId)
+		{
+			med_msgCat(msg, msgCap, "Prescription already written.");
+			return;
+		}
+	}
+
+	char today[15];
+	getTodayDate(today);
+	int newId = med_maxPrescriptionId(prescriptions) + 1;
+
+	Prescription pr(newId, apptId, patientId, doc->getId(), today, medicines, notes);
+	prescriptions.add(pr);
+	fh.appendPrescription(pr);
+	med_msgCat(msg, msgCap, "Prescription saved.");
+}
+
+void med_formatTodayAppointments(const Storage<Appointment>& appointments,
+	const Storage<Patient>& patients, const Doctor* doc,
+	char* out, int cap)
+{
+	med_msgClear(out, cap);
+	if (doc == nullptr) return;
+
+	char today[15];
+	getTodayDate(today);
+
+	const Appointment* all = appointments.getAll();
+	bool found = false;
+	for (int i = 0; i < appointments.size(); i++)
+	{
+		if (all[i].getDoctorId() == doc->getId() &&
+			mystrcmp(all[i].getAppointmentDate(), today) == 0)
+		{
+			const Patient* p = patients.findByID(all[i].getPatientId());
+			char idbuf[20];
+			char line[256];
+			myitoa(all[i].getAppointmentId(), idbuf);
+			mystrcpy(line, idbuf);
+			med_msgCat(line, sizeof line, " | ");
+			med_msgCat(line, sizeof line, p ? p->getName() : "?");
+			med_msgCat(line, sizeof line, " | ");
+			med_msgCat(line, sizeof line, all[i].getAppointmentSlot());
+			med_msgCat(line, sizeof line, " | ");
+			med_msgCat(line, sizeof line, all[i].getAppointmentStatus());
+			med_msgCat(line, sizeof line, "\n");
+			med_msgCat(out, cap, line);
+			found = true;
+		}
+	}
+	if (!found)
+		med_msgCat(out, cap, "No appointments scheduled for today.");
+}
+
+void med_formatPatientHistory(const Storage<Prescription>& prescriptions,
+	const Storage<Appointment>& appointments, const Doctor* doc,
+	int patientId, char* out, int cap)
+{
+	med_msgClear(out, cap);
+	if (doc == nullptr) return;
+
+	// check access
+	const Appointment* allAppts = appointments.getAll();
+	bool hasAccess = false;
+	for (int i = 0; i < appointments.size(); i++)
+	{
+		if (allAppts[i].getPatientId() == patientId &&
+			allAppts[i].getDoctorId() == doc->getId() &&
+			mystrcmpIgnoreCase(allAppts[i].getAppointmentStatus(), "completed") == 0)
+		{
+			hasAccess = true;
+			break;
+		}
+	}
+	if (!hasAccess)
+	{
+		med_msgCat(out, cap, "Access denied.");
+		return;
+	}
+
+	const Prescription* all = prescriptions.getAll();
+	bool found = false;
+	for (int i = 0; i < prescriptions.size(); i++)
+	{
+		if (all[i].getPatientId() == patientId &&
+			all[i].getDoctorId() == doc->getId())
+		{
+			char line[512];
+			mystrcpy(line, all[i].getPrescriptionDate());
+			med_msgCat(line, sizeof line, " | ");
+			med_msgCat(line, sizeof line, all[i].getMedicine());
+			med_msgCat(line, sizeof line, " | ");
+			med_msgCat(line, sizeof line, all[i].getPrescriptionNotes());
+			med_msgCat(line, sizeof line, "\n");
+			med_msgCat(out, cap, line);
+			found = true;
+		}
+	}
+	if (!found)
+		med_msgCat(out, cap, "No medical records found.");
+}

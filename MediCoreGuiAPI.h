@@ -55,4 +55,23 @@ void med_formatAppointmentList(const Storage<Appointment>& appointments,
     const Storage<Patient>& patients, const Storage<Doctor>& doctors, char* out, int cap);
 void med_formatUnpaidBillsAll(const Storage<Bill>& bills, const Storage<Patient>& patients, char* out, int cap);
 
+void med_guiMarkComplete(FileHandler& fh, Doctor* doc,
+    Storage<Appointment>& appointments, int apptId, char* msg, int msgCap);
+
+void med_guiMarkNoShow(FileHandler& fh, Doctor* doc,
+    Storage<Appointment>& appointments, Storage<Bill>& bills,
+    int apptId, char* msg, int msgCap);
+
+void med_guiWritePrescription(FileHandler& fh, Doctor* doc,
+    Storage<Appointment>& appointments, Storage<Prescription>& prescriptions,
+    int apptId, const char* medicines, const char* notes,
+    char* msg, int msgCap);
+
+void med_formatTodayAppointments(const Storage<Appointment>& appointments,
+    const Storage<Patient>& patients, const Doctor* doc,
+    char* out, int cap);
+
+void med_formatPatientHistory(const Storage<Prescription>& prescriptions,
+    const Storage<Appointment>& appointments, const Doctor* doc,
+    int patientId, char* out, int cap);
 #endif
