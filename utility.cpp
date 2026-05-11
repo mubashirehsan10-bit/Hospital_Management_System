@@ -216,13 +216,21 @@ void formatTimestampFull(char* buf, int cap)
 	strftime(buf, static_cast<size_t>(cap), "%d-%m-%Y %H:%M:%S", now);
 }
 
-//void getTodayDate(char* out)
-//{
-//	if (!out) return;
-//	time_t t = time(nullptr);
-//	tm nowStruct;
-//	localtime_s(&nowStruct, &t);
-//	tm* now = &nowStruct;
-//	// Format: DD-MM-YYYY
-//	std::snprintf(out, 15, "%02d-%02d-%04d", now->tm_mday, now->tm_mon + 1, now->tm_year + 1900);
-//}
+void getTodayDate(char* out)
+{
+	if (!out) return;
+	time_t t = time(nullptr);
+
+	// Use thread-safe localtime_s on MSVC and fall back to localtime with a null check on other platforms.
+	tm nowStruct;
+#if defined(_MSC_VER)
+	localtime_s(&nowStruct, &t);
+#else
+	tm* now = localtime(&t);
+	if (now == nullptr) return; // defend against failure
+	nowStruct = *now;
+#endif
+
+	// Format: DD-MM-YYYY
+	std::snprintf(out, 15, "%02d-%02d-%04d", nowStruct.tm_mday, nowStruct.tm_mon + 1, nowStruct.tm_year + 1900);
+}

@@ -672,18 +672,7 @@ void displayDoctorMenu()
 }
 
 // 1. View Today's Appointments
-void getTodayDate(char* dateBuffer)
-{
-    time_t t = time(0);           // get current time
 
-#pragma warning(push)
-#pragma warning(disable:4996)     // silence MSVC C4996 for localtime usage
-    tm* now = localtime(&t);      // convert to local time struct (use existing code path)
-#pragma warning(pop)
-
-    // format as DD-MM-YYYY
-    strftime(dateBuffer, 15, "%d-%m-%Y", now);
-}
 void ViewTodaysAppointments(Doctor* doc, Storage<Appointment>& a,
     Storage<Patient>& patients)
 {

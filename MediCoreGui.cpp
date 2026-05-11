@@ -7,6 +7,7 @@
 #include "Doctor.h"
 #include "Admin.h"
 #include <fstream>
+#include <filesystem>
 
 namespace AssetPaths
 {
@@ -46,6 +47,9 @@ enum class UiState
     PatientCancel,
     PatientPay,
     PatientTopUp,
+    PatientViewAppointments,
+    PatientViewRecords,
+    PatientViewBills,
     LoginDoctor,
     DoctorHome,
     DoctorTodayAppts,
@@ -236,12 +240,15 @@ int main()
     auto btnBack = makeButton(900.f, 580.f, 160.f, 40.f, "Back", font);
     auto btnSubmit = makeButton(900.f, 520.f, 160.f, 40.f, "Submit", font);
 
-    // --- Patient menu buttons ---
+    // --- Patient menu buttons (expanded to 8 options) ---
     auto pBook = makeButton(80.f, 180.f, 280.f, 40.f, "Book Appointment", font);
     auto pCancel = makeButton(80.f, 230.f, 280.f, 40.f, "Cancel Appointment", font);
-    auto pPay = makeButton(80.f, 280.f, 280.f, 40.f, "Pay Bill", font);
-    auto pTop = makeButton(80.f, 330.f, 280.f, 40.f, "Top Up Balance", font);
-    auto pLogout = makeButton(80.f, 500.f, 280.f, 40.f, "Logout", font);
+    auto pViewAppts = makeButton(80.f, 280.f, 280.f, 40.f, "View My Appointments", font);
+    auto pViewRecords = makeButton(80.f, 330.f, 280.f, 40.f, "View My Medical Records", font);
+    auto pViewBills = makeButton(80.f, 380.f, 280.f, 40.f, "View My Bills", font);
+    auto pPay = makeButton(80.f, 430.f, 280.f, 40.f, "Pay Bill", font);
+    auto pTop = makeButton(80.f, 480.f, 280.f, 40.f, "Top Up Balance", font);
+    auto pLogout = makeButton(80.f, 530.f, 280.f, 40.f, "Logout", font);
 
     // --- Doctor menu buttons ---
     auto dToday = makeButton(80.f, 180.f, 280.f, 40.f, "Today's Appointments", font);
@@ -373,6 +380,105 @@ int main()
                         med_msgClear(slotBuf, sizeof slotBuf);
                     }
                     else if (contains(pos, pCancel.first)) { state = UiState::PatientCancel; med_msgClear(apptCancelBuf, sizeof apptCancelBuf); }
+                    else if (contains(pos, pViewAppts.first))
+                    {
+                        // build appointments list for the logged-in patient
+                        med_msgClear(bodyText, sizeof bodyText);
+                        if (sessionPatient)
+                        {
+                            const Appointment* all = appointments.getAll();
+                            bool found = false;
+                            for (int i = 0; i < appointments.size(); i++)
+                            {
+                                if (all[i].getPatientId() == sessionPatient->getId())
+                                {
+                                    const Doctor* dd = doctors.findByID(all[i].getDoctorId());
+                                    char idbuf[20];
+                                    char line[512];
+                                    myitoa(all[i].getAppointmentId(), idbuf);
+                                    mystrcpy(line, idbuf);
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, dd ? dd->getName() : "?");
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, all[i].getAppointmentDate());
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, all[i].getAppointmentSlot());
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, all[i].getAppointmentStatus());
+                                    med_msgCat(line, sizeof line, "\n");
+                                    med_msgCat(bodyText, sizeof bodyText, line);
+                                    found = true;
+                                }
+                            }
+                            if (!found) med_msgCat(bodyText, sizeof bodyText, "No appointments found.");
+                        }
+                        else
+                            med_msgCat(bodyText, sizeof bodyText, "No patient session.");
+                        state = UiState::PatientViewAppointments;
+                    }
+                    else if (contains(pos, pViewRecords.first))
+                    {
+                        med_msgClear(bodyText, sizeof bodyText);
+                        if (sessionPatient)
+                        {
+                            const Prescription* all = prescriptions.getAll();
+                            bool found = false;
+                            for (int i = 0; i < prescriptions.size(); i++)
+                            {
+                                if (all[i].getPatientId() == sessionPatient->getId())
+                                {
+                                    char line[1024];
+                                    mystrcpy(line, all[i].getPrescriptionDate());
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, all[i].getMedicine());
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, all[i].getPrescriptionNotes());
+                                    med_msgCat(line, sizeof line, "\n");
+                                    med_msgCat(bodyText, sizeof bodyText, line);
+                                    found = true;
+                                }
+                            }
+                            if (!found) med_msgCat(bodyText, sizeof bodyText, "No medical records found.");
+                        }
+                        else
+                            med_msgCat(bodyText, sizeof bodyText, "No patient session.");
+                        state = UiState::PatientViewRecords;
+                    }
+                    else if (contains(pos, pViewBills.first))
+                    {
+                        med_msgClear(bodyText, sizeof bodyText);
+                        if (sessionPatient)
+                        {
+                            const Bill* all = bills.getAll();
+                            bool found = false;
+                            for (int i = 0; i < bills.size(); i++)
+                            {
+                                if (all[i].getPatientId() == sessionPatient->getId())
+                                {
+                                    char idbuf[20];
+                                    char amtbuf[64];
+                                    char line[512];
+                                    myitoa(all[i].getId(), idbuf);
+                                    myftoa(all[i].getAmount(), amtbuf);
+                                    mystrcpy(line, idbuf);
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, "PKR ");
+                                    med_msgCat(line, sizeof line, amtbuf);
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, all[i].getStatus());
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, all[i].getAppointmentDate());
+                                    med_msgCat(line, sizeof line, "\n");
+                                    med_msgCat(bodyText, sizeof bodyText, line);
+                                    found = true;
+                                }
+                            }
+                            if (!found) med_msgCat(bodyText, sizeof bodyText, "No bills found.");
+                        }
+                        else
+                            med_msgCat(bodyText, sizeof bodyText, "No patient session.");
+                        state = UiState::PatientViewBills;
+                    }
                     else if (contains(pos, pPay.first)) { state = UiState::PatientPay;    med_msgClear(billPayBuf, sizeof billPayBuf); }
                     else if (contains(pos, pTop.first)) { state = UiState::PatientTopUp;  med_msgClear(amountBuf, sizeof amountBuf); }
                     else if (contains(pos, pLogout.first) || contains(pos, btnBack.first))
@@ -432,6 +538,14 @@ int main()
                     refreshSessions(); state = UiState::PatientHome;
                 }
                 else if (state == UiState::PatientTopUp && contains(pos, btnBack.first))
+                    state = UiState::PatientHome;
+
+                // Viewing patient lists -> back
+                else if (state == UiState::PatientViewAppointments && contains(pos, btnBack.first))
+                    state = UiState::PatientHome;
+                else if (state == UiState::PatientViewRecords && contains(pos, btnBack.first))
+                    state = UiState::PatientHome;
+                else if (state == UiState::PatientViewBills && contains(pos, btnBack.first))
                     state = UiState::PatientHome;
 
                 // Doctor home
@@ -723,7 +837,8 @@ int main()
         }
         else if (state == UiState::PatientHome || state == UiState::PatientBook ||
             state == UiState::PatientCancel || state == UiState::PatientPay ||
-            state == UiState::PatientTopUp)
+            state == UiState::PatientTopUp || state == UiState::PatientViewAppointments ||
+            state == UiState::PatientViewRecords || state == UiState::PatientViewBills)
         {
             if (hasPat) window.draw(sprPatient); else window.draw(fallbackBg);
         }
@@ -749,7 +864,7 @@ int main()
             drawPair(window, btnDoctor);
             drawPair(window, btnAdmin);
             drawPair(window, btnExit);
-        }
+        }               
         else if (state == UiState::LoginPatient || state == UiState::LoginDoctor)
         {
             sf::Text hint(font, "ID (top) | Password (bottom). Tab=switch. Backspace=delete.", 16u);
@@ -788,8 +903,9 @@ int main()
                 bt.setFillColor(sf::Color(220, 255, 180)); bt.setPosition({ 40.f, 148.f }); window.draw(bt);
             }
             drawPair(window, pBook); drawPair(window, pCancel);
-            drawPair(window, pPay);  drawPair(window, pTop);
-            drawPair(window, pLogout);
+            drawPair(window, pViewAppts); drawPair(window, pViewRecords);
+            drawPair(window, pViewBills); drawPair(window, pPay);
+            drawPair(window, pTop); drawPair(window, pLogout);
         }
         else if (state == UiState::PatientBook)
         {
@@ -828,6 +944,24 @@ int main()
             sf::Text v(font, sf::String::fromUtf8(amountBuf, amountBuf + mystrlen(amountBuf)), 22u);
             v.setPosition({ 40.f, 240.f }); v.setFillColor(sf::Color::Yellow); window.draw(v);
             drawPair(window, btnSubmit); drawPair(window, btnBack);
+        }
+        else if (state == UiState::PatientViewAppointments)
+        {
+            body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
+            window.draw(body);
+            drawPair(window, btnBack);
+        }
+        else if (state == UiState::PatientViewRecords)
+        {
+            body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
+            window.draw(body);
+            drawPair(window, btnBack);
+        }
+        else if (state == UiState::PatientViewBills)
+        {
+            body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
+            window.draw(body);
+            drawPair(window, btnBack);
         }
 
         // --- Doctor states ---
