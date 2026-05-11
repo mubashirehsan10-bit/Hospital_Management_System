@@ -5,64 +5,75 @@ template <class T>
 class Storage
 {
 private:
-    T* data;      // pointer instead of array
+    static const int CAPACITY = 100;
+    T data[CAPACITY];
     int count;
 public:
-    Storage(int t = 0)
-    {
-        count = t;
-        data = new T[100];  // allocate on heap
-    }
+    Storage() : count(0) {}
 
-    Storage(const Storage& other)
+    Storage(const Storage& other) : count(other.count)
     {
-        count = other.count;
-        data = new T[100];
         for (int i = 0; i < count; i++)
             data[i] = other.data[i];
     }
 
+    Storage& operator=(const Storage& other)
+    {
+        if (this == &other) return *this;
+        count = other.count;
+        for (int i = 0; i < count; i++)
+            data[i] = other.data[i];
+        return *this;
+    }
+
+    void clear()
+    {
+        count = 0;
+    }
+
     void add(const T& item)
     {
-        if (count >= 100) return;
+        if (count >= CAPACITY) return;
         data[count++] = item;
     }
+
     void removeByID(int id)
     {
         for (int i = 0; i < count; i++)
         {
-            if (data[i].getId() == id) {
+            if (data[i].getId() == id)
+            {
                 for (int j = i; j < count - 1; j++)
-                {
                     data[j] = data[j + 1];
-                }
                 count--;
+                return;
             }
-
         }
     }
+
     T* findByID(int id)
     {
         for (int i = 0; i < count; i++)
             if (data[i].getId() == id)
                 return &data[i];
         return nullptr;
-
-    }
-    T* getAll()
-    {
-        return data;
-    }
-    int size()
-    {
-        return count;
     }
 
-    ~Storage()
+    const T* findByID(int id) const
     {
-        delete[] data;  // free heap memory
+        for (int i = 0; i < count; i++)
+            if (data[i].getId() == id)
+                return &data[i];
+        return nullptr;
     }
 
-    // everything else stays same
+    T* getAll() { return data; }
+
+    const T* getAll() const { return data; }
+
+    int size() const { return count; }
+
+    ~Storage() {}
 };
-#endif // !STORAGE_H
+
+#endif

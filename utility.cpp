@@ -1,5 +1,5 @@
 #include "utility.h" 
-
+#include <ctime>
 
 int mystrlen(const char* s)
 {
@@ -179,4 +179,39 @@ void getToken(const char* line, char* token, int& pos)
 	}
 	token[i] = '\0';
 	if (line[pos] == ',') pos++; // skip comma
+}
+
+void getStandardTimeSlot(int index, char* out)
+{
+	switch (index)
+	{
+	case 0: mystrcpy(out, "09:00"); break;
+	case 1: mystrcpy(out, "10:00"); break;
+	case 2: mystrcpy(out, "11:00"); break;
+	case 3: mystrcpy(out, "12:00"); break;
+	case 4: mystrcpy(out, "13:00"); break;
+	case 5: mystrcpy(out, "14:00"); break;
+	case 6: mystrcpy(out, "15:00"); break;
+	case 7: mystrcpy(out, "16:00"); break;
+	default: out[0] = '\0'; break;
+	}
+}
+
+int getCurrentCalendarYear()
+{
+	time_t t = time(0);
+	tm nowStruct;
+	localtime_s(&nowStruct, &t);
+	tm* now = &nowStruct;
+	return 1900 + now->tm_year;
+}
+
+void formatTimestampFull(char* buf, int cap)
+{
+	if (cap < 4 || buf == nullptr) return;
+	time_t t = time(0);
+	tm nowStruct;
+	localtime_s(&nowStruct, &t);
+	tm* now = &nowStruct;
+	strftime(buf, static_cast<size_t>(cap), "%d-%m-%Y %H:%M:%S", now);
 }

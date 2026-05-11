@@ -61,6 +61,16 @@ void loadAllData(Storage<Patient> &patients,Storage<Prescription> &prescriptions
 {
 	try
 	{
+        patients.clear();
+        prescriptions.clear();
+        bills.clear();
+        appointments.clear();
+        doctors.clear();
+        if (admin != nullptr)
+        {
+            delete admin;
+            admin = nullptr;
+        }
         fh.loadPatients(patients);
         fh.loadDoctors(doctors);
         fh.loadAdmin(admin);
@@ -661,11 +671,15 @@ void displayDoctorMenu()
     cout << "6. Logout\n\n";
 }
 
-//1. View Today's Appointments
+// 1. View Today's Appointments
 void getTodayDate(char* dateBuffer)
 {
     time_t t = time(0);           // get current time
-    tm* now = localtime(&t);      // convert to local time struct
+
+#pragma warning(push)
+#pragma warning(disable:4996)     // silence MSVC C4996 for localtime usage
+    tm* now = localtime(&t);      // convert to local time struct (use existing code path)
+#pragma warning(pop)
 
     // format as DD-MM-YYYY
     strftime(dateBuffer, 15, "%d-%m-%Y", now);
@@ -713,7 +727,7 @@ void ViewTodaysAppointments(Doctor* doc, Storage<Appointment>& a,
         cout << todayAppts[i];
     }
 }
-//2. Mark Appointment Complete
+// 2. Mark Appointment Complete
 void MarkAppointmentComplete(Validator v,Doctor* doc, Storage<Appointment>& a,
     Storage<Patient>& patients,FileHandler& fh)
 {
@@ -759,6 +773,7 @@ void MarkAppointmentComplete(Validator v,Doctor* doc, Storage<Appointment>& a,
     if (!flag)
         cout << "No such Appointment id exis\n";
 }
+// 3. Mark No Show
 void MarkNoShow(Validator v, Doctor* doc, Storage<Appointment>& a,
     Storage<Patient>& patients, FileHandler& fh,Storage<Bill>& bills)
 {
@@ -818,145 +833,224 @@ void MarkNoShow(Validator v, Doctor* doc, Storage<Appointment>& a,
     if (!flag)
         cout << "No such Appointment id exis\n";
 }
-//4. Write Prescription
-void WritePrescription(Validator& v,Storage<Appointment>& a,Storage<Prescription>& p,Doctor* d)
+// 4. Write Prescription
+void WritePrescription(FileHandler& fh,Validator& v,Storage<Appointment>& a,Storage<Prescription>& p,Doctor* d)
 {
 
+    int attempts = 0;
+    int id;
 
-}
-int main()
-{
-    // Loading Data from the files
-    Storage<Patient> patients;
-    Storage<Doctor> doctors;
-    Storage<Appointment> appointments;
-    Storage<Bill> bills;
-    Storage<Prescription> prescriptions;
-    Admin* admin = nullptr;
-    FileHandler fh;
-    Validator validator;// check validations through validator object
-    int option;
-    loadAllData(patients, prescriptions, bills, appointments, doctors, admin, fh);// data loading......
-    try {
-        throw InvalidInputException("TEST MESSAGE");
-    }
-    catch (InvalidInputException& e) {
-        cout << e.what() << endl;
-    }
-    cout << " Welcome to MediCore Hospital Management System\n";
-    do {
-        displayMainMenu();
-        option = getChoice(validator, 1, 4);
-
-        switch (option)
+    while (attempts != 3) {
+        try
         {
-        case 1:
-        {
-            Patient* p = loginPatient(validator, patients);
-            if (p != nullptr)
+            cout << "Enter Appointment ID: ";
+            id = getChoice(v, 1);
+            if (!v.isValidID(id))
             {
-                displayPatient(p);
-                displayPatientMenu();
-                int pChoice = getChoice(validator, 1, 8);
-                switch (pChoice)
-                {
-                case 1:
-                {
-                    BookAppointment(validator, fh, p, bills, doctors, appointments);
-                    break;
-                }
-                case 2:
-                {
-                    CancelAppointment(validator, doctors, fh, p, bills, appointments);
-                    break;
-                }
-                case 3:
-                {
-                    ViewMyAppointments(appointments, p);
-                    break;
-                }
-                case 4:
-                {
-                    ViewMyMedicalRecords(prescriptions, p);
-                    break;
-                }
-                case 5:
-                {
-                    ViewMyBills(bills, p);
-                    break;
-                }
-                case 6:
-                {
-                    PayBill(validator, bills, p, fh);
-                    break;
-                }
-                case 7:
-                {
-                    TopUpBalance(validator, fh, p);
-                    break;
-                }
-                case 8:
-                {
-                    cout << "Patient Logged Out!!\n";
-                    break;
-                }
-                }
-
+                throw InvalidInputException("Invalid ID Entered!!");
             }
             else
-                cout << "No Such Patient Exist. Contact Admin!!\n";
-            break;
+                break;
         }
-        case 2:
+        catch (InvalidInputException& e)
         {
-            Doctor* d = loginDoctor(validator, doctors);
-            if (d != nullptr)
+            cout << e.what() << endl;
+            attempts++;
+
+            cout << 3 - attempts << " Attempts Reamaining!!\n";
+        }
+    }
+    if (attempts == 3)
+    {
+        cout << "0 Attempts left\n\n";
+        return;
+    }
+
+    Appointment* app = a.getAll();
+    Prescription* pres = p.getAll();
+    bool flag = false;
+
+    for (int i = 0; i < a.size(); i++)
+    {
+        if (app[i].getAppointmentId() == id && mystrcmpIgnoreCase(app[i].getAppointmentStatus(), "Completed") == 0)
+        {
+            for (int j = 0; j < p.size(); j++)
             {
-                displayDoctor(p);
-                displayDoctorMenu();
-                int dChoice = getChoice(validator, 1, 8);
-                switch (dChoice)
+                if (pres[j].getAppointmentId() == id)
                 {
+                    cout << "Prescription already written for this appointment.\n";
+                    return;
+                }
+                else if (pres[j].getAppointmentId() == id && mystrcmp(pres[j].getPrescriptionNotes(), "") == 0)
+                {
+                    cout << "Enter medicines (format: MedicineName Dosage; e.g Paracetamol 500mg; Amoxicillin 250mg): ";
+                    char medicine[500];
+                    cin.getline(medicine, 500);
+                    cout << "Enter notes (max 300 chars): ";
+                    char notes[300];
+                    cin.ignore();
+                    cin.getline(notes, 300);
+                    cin.ignore();
 
-                case 1:
-                {
+                    int newid = p.size() + 1;
+
+                    char today[15];
+                    getTodayDate(today);
+                    Prescription prescrip(newid, id, pres[j].getPatientId(), d->getId(), today,
+                        medicine, notes);
+                    fh.appendPrescription(prescrip);
+                    cout << "Prescription Written Successfully\n";
+                    return;
 
                 }
-
-
-
-                case 2:
-
-
-
-                case 3:
-
-
-
-                case 4:
-
-                case 5:
-
-
-                case 6:
-
-
-
-                }
-
             }
 
-
         }
-        }
+            
+    }
+    cout << "No such Prescription Exists.\n";
 
-    } while (option != 4);
-        cout << "\nThank You for using Hospital Mangament System!!!!\n";
-        if (admin != nullptr)
+
+
+}
+// 5. ViewPatientMedicalHistory
+void ViewPatientMedicalHistory(Validator& v,Storage<Patient>& p,Doctor* d,Storage<Prescription>& pres,
+    Storage<Appointment>& app)
+{
+    int attempts = 0;
+    int id;
+
+    Patient* patient = p.getAll();
+    while (attempts != 3) {
+        try
         {
-            delete admin;
-            admin = nullptr;  // set to nullptr after delete
+            cout << "Enter Patient ID: ";
+            id = getChoice(v, 1);
+            if (!v.isValidID(id))
+            {
+                throw InvalidInputException("Invalid ID Entered!!");
+            }
+            else
+            {
+                Patient* found = p.findByID(id);
+                if (found == nullptr)
+                {
+                    cout << "No Such Patient Exists\n";
+                    return;
+                }
+                break;
+            }
+                
         }
-        return 0;
+        catch (InvalidInputException& e)
+        {
+            cout << e.what() << endl;
+            attempts++;
+
+            cout << 3 - attempts << " Attempts Reamaining!!\n";
+        }
+    }
+    if (attempts == 3)
+    {
+        cout << "0 Attempts left\n\n";
+        return;
+    }
+
+
+    Prescription* pr = pres.getAll();
+    Appointment* ap = app.getAll();
+    bool flag = false;
+    Prescription selected[100];
+    int count = 0;
+
+    bool hasAccess = false;
+    for (int i = 0; i < app.size(); i++)
+    {
+        if (ap[i].getPatientId() == id &&
+            ap[i].getDoctorId() == d->getId() &&
+            mystrcmpIgnoreCase(ap[i].getAppointmentStatus(), "completed") == 0)
+        {
+            hasAccess = true;
+            break;
+        }
+    }
+    if (!hasAccess)
+    {
+        cout << "Access denied. You can only view records of your own patients.\n";
+        return;
+    }
+    
+    for (int i = 0; i < pres.size(); i++)
+    {
+        if (pr[i].getPatientId() == id &&
+            pr[i].getDoctorId() == d->getId())
+        {
+            selected[count++] = pr[i];
+        }
+    }
+
+    for (int i = 0; i < count - 1; i++) 
+    {
+        for (int j = 0; j < count - i - 1; j++)
+        {
+            if (mystrcmp(selected[j].getPrescriptionDate(), selected[j + 1].getPrescriptionDate()) > 0)
+            {
+                Prescription temp = selected[j];
+                selected[j] = selected[j + 1];
+                selected[j + 1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        cout << selected[i];
+    }
     
 }
+//===============================================================================================
+void DisplayAdmin()
+{
+    cout << "\nAdmin Panel ù MediCore\n";
+    cout << "======================\n";
+    cout << "1. Add Doctor\n";
+    cout << "2. Remove Doctor\n";
+    cout << "3. View All Patients\n";
+    cout << "4. View All Doctors\n";
+    cout << "5. View All Appointments\n";
+    cout << "6. View Unpaid Bills\n";
+    cout << "7. Discharge Patient\n";
+    cout << "8. View Security Log\n";
+    cout << "9. Generate Daily Report\n";
+    cout << "10. Logout\n";
+
+}
+Admin* loginAdmin(Validator& validator, Admin* a, FileHandler& fh)
+{
+    char password[20];
+    int attempts = 0;
+
+    while (attempts < 3)
+    {
+        cout << "Enter Password: ";
+        cin >> password;
+
+        if (mystrcmp(a->getPassword(), password) == 0)
+        {
+            cout << "Logged in successfully!\n";
+            return a;
+        }
+        attempts++;
+        cout << "Invalid Password! " << 3 - attempts << " attempts remaining.\n";
+    }
+
+    cout << "Account locked. Contact admin.\n";
+    char timestamp[40];
+    formatTimestampFull(timestamp, sizeof timestamp);
+    char sid[10];
+    myitoa(a->getId(), sid);
+    fh.appendSecurityLog(timestamp, "Admin", sid, "FAILED");
+    return nullptr;
+}
+
+/* Console main() removed ù entry point is MediCoreGui.cpp (SFML). */

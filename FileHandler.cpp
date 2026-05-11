@@ -235,8 +235,8 @@ void FileHandler::loadBills(Storage<Bill>& storage)
 		getToken(line, token, pos); // Time Slot extraction
 		mystrcpy(date, token);
 
-		Bill b(Bid, Pid, Aid, amount, status, date);
-		storage.add(b); // patient added to storage
+		Bill b(Aid, Bid, Pid, amount, status, date);
+		storage.add(b);
 
 	}
 }
@@ -410,7 +410,7 @@ void FileHandler::appendPrescription(const Prescription& p)
 	// write comma separated
 	fout << Prid << ","
 		<< Aid << ","
-		<< Aid << ","
+		<< Pid << ","
 		<< Did << ","
 		<< p.getPrescriptionDate() << ","
 		<< p.getMedicine() << ","
@@ -527,7 +527,7 @@ void FileHandler::updateAppointment(int id, const Appointment& a)
 			myitoa(a.getAppointmentId(), aid);
 			myitoa(a.getPatientId(), pid);
 			myitoa(a.getDoctorId(), did);
-			fout << aid << "," << pid << "," << did 
+			fout << aid << "," << pid << "," << did << ","
 				<< a.getAppointmentDate() << ","
 				<< a.getAppointmentSlot() << ","
 				<< a.getAppointmentStatus() <<"\n";
@@ -571,7 +571,7 @@ void FileHandler::updateBill(int id, const Bill& b)
 			myitoa(b.getPatientId(), pid);
 			myitoa(b.getAppointmentId(), aid);
 			myftoa(b.getAmount(), amnt);
-			fout << bid << "," << pid << "," << aid << "," << amnt
+			fout << bid << "," << pid << "," << aid << "," << amnt << ","
 				<< b.getStatus() << ","
 				<< b.getAppointmentDate() << "\n";
 		}
@@ -681,4 +681,95 @@ void FileHandler::appendDischarged(const Patient& p)
 
 	fout.close();
 
+}
+
+void FileHandler::appendArchivedRecord(const char* line)
+{
+	ofstream fout("discharged.txt", ios::app);
+	if (!fout)
+		throw FileNotFoundException("discharged.txt not found!");
+	fout << line << "\n";
+	fout.close();
+}
+
+void FileHandler::deleteAppointmentsByPatientId(int patientId)
+{
+	ifstream fin("appointments.txt");
+	if (!fin)
+		throw FileNotFoundException("appointments.txt NOT FOUND!!!");
+	ofstream fout("temp.txt");
+	char line[500];
+	myreadLine(fin, line, 500);
+	fout << line << "\n";
+	while (!fin.eof())
+	{
+		myreadLine(fin, line, 500);
+		if (mystrlen(line) == 0) continue;
+		char token[100];
+		int pos = 0;
+		getToken(line, token, pos);
+		getToken(line, token, pos);
+		int pid = myatoi(token);
+		if (pid != patientId)
+			fout << line << "\n";
+	}
+	fin.close();
+	fout.close();
+	remove("appointments.txt");
+	rename("temp.txt", "appointments.txt");
+}
+
+void FileHandler::deleteBillsByPatientId(int patientId)
+{
+	ifstream fin("bills.txt");
+	if (!fin)
+		throw FileNotFoundException("bills.txt NOT FOUND!!!");
+	ofstream fout("temp.txt");
+	char line[500];
+	myreadLine(fin, line, 500);
+	fout << line << "\n";
+	while (!fin.eof())
+	{
+		myreadLine(fin, line, 500);
+		if (mystrlen(line) == 0) continue;
+		char token[100];
+		int pos = 0;
+		getToken(line, token, pos);
+		getToken(line, token, pos);
+		int pid = myatoi(token);
+		if (pid != patientId)
+			fout << line << "\n";
+	}
+	fin.close();
+	fout.close();
+	remove("bills.txt");
+	rename("temp.txt", "bills.txt");
+}
+
+void FileHandler::deletePrescriptionsByPatientId(int patientId)
+{
+	ifstream fin("prescriptions.txt");
+	if (!fin)
+		throw FileNotFoundException("prescriptions.txt NOT FOUND!!!");
+	ofstream fout("temp.txt");
+	char line[500];
+	myreadLine(fin, line, 500);
+	fout << line << "\n";
+	while (!fin.eof())
+	{
+		myreadLine(fin, line, 500);
+		if (mystrlen(line) == 0) continue;
+		char token[100];
+		int pos = 0;
+		getToken(line, token, pos);
+		getToken(line, token, pos);
+		getToken(line, token, pos);
+		int pid = myatoi(token);
+		if (pid != patientId)
+			fout << line << "\n";
+	}
+	fin.close();
+	fout.close();
+	remove("prescriptions.txt");
+	rename("temp.txt", "prescriptions.txt");
 }

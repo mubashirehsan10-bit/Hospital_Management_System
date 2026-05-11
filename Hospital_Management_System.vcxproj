@@ -102,10 +102,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\HP\OneDrive\Documents\SFML3Link\Externals\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\HP\OneDrive\Desktop\oop_work\practice\Hospital_Management_System\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;
+sfml-window-d.lib;
+sfml-system-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,6 +126,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>sfml-graphics.lib;
+sfml-window.lib
+;sfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -130,6 +139,8 @@
     <ClCompile Include="Doctor.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="HospitalException.cpp" />
+    <ClCompile Include="MediCoreGui.cpp" />
+    <ClCompile Include="MediCoreGuiAPI.cpp" />
     <ClCompile Include="Patient.cpp" />
     <ClCompile Include="Person.cpp" />
     <ClCompile Include="Prescription.cpp" />
@@ -145,6 +156,7 @@
     <ClInclude Include="HospitalException.h" />
     <ClInclude Include="InsufficientFundsException.h" />
     <ClInclude Include="InvalidInputException.h" />
+    <ClInclude Include="MediCoreGuiAPI.h" />
     <ClInclude Include="Patient.h" />
     <ClInclude Include="Person.h" />
     <ClInclude Include="Prescription.h" />

@@ -40,5 +40,10 @@ public:
 
     // discharged
     void appendDischarged(const Patient& p);
+
+    void appendArchivedRecord(const char* line);
+    void deleteAppointmentsByPatientId(int patientId);
+    void deleteBillsByPatientId(int patientId);
+    void deletePrescriptionsByPatientId(int patientId);
 };
 #endif

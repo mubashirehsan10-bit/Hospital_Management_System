@@ -28,6 +28,7 @@ public:
 	Appointment& setAppointmentStatus(const char* );
 	char* getAppointmentStatus()const;
 	int getAppointmentId() const;
+	int getId() const;
 	char* getAppointmentDate() const;
 	Appointment& changeDate(const char*);
 	char* getAppointmentSlot() const;

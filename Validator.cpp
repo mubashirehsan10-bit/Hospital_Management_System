@@ -1,5 +1,6 @@
 #include "Validator.h"
 #include "utility.h"
+#include <ctime>
 
 bool Validator::isValidID(int id)
 {
@@ -14,7 +15,7 @@ bool Validator::isValidDate(const char* date)
     // year
     int year = (date[6] - '0') * 1000 + (date[7] - '0') * 100 +
         (date[8] - '0') * 10 + (date[9] - '0');
-    if (year < 2026)
+    if (year < getCurrentCalendarYear())
         return false;
 
     // day

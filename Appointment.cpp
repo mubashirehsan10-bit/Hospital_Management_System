@@ -28,8 +28,8 @@ Appointment::Appointment(const Appointment& s)
 	time_slot = new char[mystrlen(s.time_slot) + 1]; // new time slot
 	mystrcpy(time_slot, s.time_slot);
 
-	status = new char[mystrlen("Pending") + 1]; // status
-	mystrcpy(status, "Pending");
+	status = new char[mystrlen(s.status) + 1];
+	mystrcpy(status, s.status);
 }
 Appointment& Appointment::operator=(const Appointment& s)
 {
@@ -49,8 +49,8 @@ Appointment& Appointment::operator=(const Appointment& s)
 	time_slot = new char[mystrlen(s.time_slot) + 1]; // new time slot
 	mystrcpy(time_slot, s.time_slot);
 
-	status = new char[mystrlen("Pending") + 1]; // status
-	mystrcpy(status, "Pending");
+	status = new char[mystrlen(s.status) + 1];
+	mystrcpy(status, s.status);
 
 	return *this;
 
@@ -88,6 +88,7 @@ Appointment& Appointment::setDoctorId(int did)
 }
 char* Appointment::getAppointmentStatus()const { return status; }
 int Appointment::getAppointmentId() const { return appointment_id; }
+int Appointment::getId() const { return appointment_id; }
 char* Appointment::getAppointmentDate() const { return date; }
 Appointment& Appointment::changeDate(const char* d)
 {
