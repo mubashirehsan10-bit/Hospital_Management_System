@@ -137,26 +137,57 @@ void myitoa(int num, char* s)
 // float to string
 void myftoa(float num, char* s, int decimals)
 {
+	int index = 0;
+
+	// Handle negative
+	if (num < 0)
+	{
+		s[index++] = '-';
+		num = -num;
+	}
+
+	// Integer part
 	int intPart = (int)num;
 	float decPart = num - intPart;
 
-	// convert integer part
-	myitoa(intPart, s);
+	// Convert integer part
+	char temp[20];
+	int tempIndex = 0;
 
-	// add decimal point
-	int len = mystrlen(s);
-	s[len] = '.';
-	s[len + 1] = '\0';
-
-	// convert decimal part
-	for (int i = 0; i < decimals; i++)
+	if (intPart == 0)
 	{
-		decPart *= 10;
-		int digit = (int)decPart;
-		s[mystrlen(s)] = '0' + digit;
-		s[mystrlen(s)] = '\0';
-		decPart -= digit;
+		temp[tempIndex++] = '0';
 	}
+	else
+	{
+		while (intPart > 0)
+		{
+			temp[tempIndex++] = (intPart % 10) + '0';
+			intPart /= 10;
+		}
+	}
+
+	// Reverse integer digits into s
+	for (int i = tempIndex - 1; i >= 0; i--)
+	{
+		s[index++] = temp[i];
+	}
+
+	// Decimal part
+	if (decimals > 0)
+	{
+		s[index++] = '.';
+
+		for (int i = 0; i < decimals; i++)
+		{
+			decPart *= 10;
+			int digit = (int)decPart;
+			s[index++] = digit + '0';
+			decPart -= digit;
+		}
+	}
+
+	s[index] = '\0';  // Proper termination
 }
 // read one line manually without string
 void myreadLine(std::ifstream& fin, char* buffer, int maxSize)

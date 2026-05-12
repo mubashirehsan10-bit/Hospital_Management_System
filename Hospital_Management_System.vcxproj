@@ -134,7 +134,6 @@ sfml-window.lib
   <ItemGroup>
     <ClCompile Include="Admin.cpp" />
     <ClCompile Include="Appointment.cpp" />
-    <ClCompile Include="Backend.cpp" />
     <ClCompile Include="Bill.cpp" />
     <ClCompile Include="Doctor.cpp" />
     <ClCompile Include="FileHandler.cpp" />
