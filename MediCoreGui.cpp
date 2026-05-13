@@ -66,6 +66,7 @@ enum class UiState
     AdminRemoveDoctor,
     AdminAppointments,
     AdminUnpaidBills,
+    AdminDailyReport,
     AdminSecurityLog
 };
 
@@ -154,12 +155,12 @@ int main()
     sf::Sprite sprMain(texMain), sprPatient(texPatient), sprDoctor(texDoctor), sprAdmin(texAdmin);
 
     auto scaleSpr = [&](sf::Sprite& s, bool has)
-        {
+    {
             if (!has) return;
             auto sz = s.getTexture().getSize();
             if (sz.x == 0 || sz.y == 0) return;
             s.setScale({ (float)window.getSize().x / sz.x, (float)window.getSize().y / sz.y });
-        };
+    };
     scaleSpr(sprMain, hasMain); scaleSpr(sprPatient, hasPat);
     scaleSpr(sprDoctor, hasDoc); scaleSpr(sprAdmin, hasAdm);
 
@@ -211,7 +212,7 @@ int main()
 
     // --- Button factory ---
     auto makeButton = [](float x, float y, float w, float h, const char* label, const sf::Font& f)
-        {
+    {
             sf::RectangleShape r({ w, h });
             r.setPosition({ x, y });
             r.setFillColor(sf::Color(60, 90, 130, 200));
@@ -221,13 +222,13 @@ int main()
             t.setFillColor(sf::Color::White);
             t.setPosition({ x + 10.f, y + 8.f });
             return std::pair<sf::RectangleShape, sf::Text>(r, t);
-        };
+    };
 
     auto drawPair = [&](sf::RenderTarget& target, std::pair<sf::RectangleShape, sf::Text>& p)
-        {
+    {
             target.draw(p.first);
             target.draw(p.second);
-        };
+    };
 
     // --- Role select buttons ---
     auto btnPatient = makeButton(80.f, 200.f, 220.f, 44.f, "1. Patient", font);
@@ -241,14 +242,14 @@ int main()
     auto btnSubmit = makeButton(900.f, 520.f, 160.f, 40.f, "Submit", font);
 
     // --- Patient menu buttons (expanded to 8 options) ---
-    auto pBook = makeButton(80.f, 180.f, 280.f, 40.f, "Book Appointment", font);
-    auto pCancel = makeButton(80.f, 230.f, 280.f, 40.f, "Cancel Appointment", font);
-    auto pViewAppts = makeButton(80.f, 280.f, 280.f, 40.f, "View My Appointments", font);
-    auto pViewRecords = makeButton(80.f, 330.f, 280.f, 40.f, "View My Medical Records", font);
-    auto pViewBills = makeButton(80.f, 380.f, 280.f, 40.f, "View My Bills", font);
-    auto pPay = makeButton(80.f, 430.f, 280.f, 40.f, "Pay Bill", font);
-    auto pTop = makeButton(80.f, 480.f, 280.f, 40.f, "Top Up Balance", font);
-    auto pLogout = makeButton(80.f, 530.f, 280.f, 40.f, "Logout", font);
+    auto pBook = makeButton(80.f, 180.f, 260.f, 40.f, "Book Appointment", font);
+    auto pCancel = makeButton(80.f, 230.f, 260.f, 40.f, "Cancel Appointment", font);
+    auto pViewAppts = makeButton(80.f, 280.f, 260.f, 40.f, "View Appointments", font);
+    auto pViewRecords = makeButton(80.f, 330.f, 260.f, 40.f, "View Medical Records", font);
+    auto pViewBills = makeButton(360.f, 180.f, 260.f, 40.f, "View Bills", font);
+    auto pPay = makeButton(360.f, 230.f, 260.f, 40.f, "Pay Bill", font);
+    auto pTop = makeButton(360.f, 280.f, 260.f, 40.f, "Top Up Balance", font);
+    auto pLogout = makeButton(360.f, 330.f, 260.f, 40.f, "Logout", font);
 
     // --- Doctor menu buttons ---
     auto dToday = makeButton(80.f, 180.f, 280.f, 40.f, "Today's Appointments", font);
@@ -259,22 +260,21 @@ int main()
     auto dLogout = makeButton(80.f, 500.f, 280.f, 40.f, "Logout", font);
 
     // --- Admin menu buttons ---
-    auto aPatients = makeButton(80.f, 180.f, 280.f, 40.f, "View Patients", font);
-    auto aDoctors = makeButton(80.f, 230.f, 280.f, 40.f, "View Doctors", font);
-    auto aDisch = makeButton(80.f, 280.f, 280.f, 40.f, "Discharge Patient", font);
-    auto aAddDr = makeButton(80.f, 330.f, 280.f, 40.f, "Add Doctor", font);
-    auto aRemoveDoc = makeButton(380.f, 180.f, 280.f, 40.f, "Remove Doctor", font);
-    auto aAppointments = makeButton(380.f, 230.f, 280.f, 40.f, "View Appointments", font);
-    auto aUnpaid = makeButton(380.f, 280.f, 280.f, 40.f, "Unpaid Bills", font);
-    auto aSecLog = makeButton(380.f, 330.f, 280.f, 40.f, "Security Log", font);
-    auto aLogout = makeButton(80.f, 560.f, 280.f, 40.f, "Logout", font);
+    auto aPatients = makeButton(80.f, 180.f, 260.f, 40.f, "View Patients", font);
+    auto aDoctors = makeButton(80.f, 230.f, 260.f, 40.f, "View Doctors", font);
+    auto aDisch = makeButton(80.f, 280.f, 260.f, 40.f, "Discharge Patient", font);
+    auto aAddDr = makeButton(80.f, 330.f, 260.f, 40.f, "Add Doctor", font);
+    auto aRemoveDoc = makeButton(360.f, 180.f, 260.f, 40.f, "Remove Doctor", font);
+    auto aAppointments = makeButton(360.f, 230.f, 260.f, 40.f, "Appointments", font);
+    auto aUnpaid = makeButton(360.f, 280.f, 260.f, 40.f, "Unpaid Bills", font);
+    auto aSecLog = makeButton(360.f, 330.f, 260.f, 40.f, "Security Log", font);
+    auto aReport = makeButton(360.f, 380.f, 260.f, 40.f, "Daily Report", font);
+    auto aLogout = makeButton(80.f, 390.f, 260.f, 40.f, "Logout", font);
 
     // =====================================================================
     // MAIN LOOP
-    // =====================================================================
     while (window.isOpen())
     {
-        // -----------------------------------------------------------------
         // EVENT HANDLING
         // -----------------------------------------------------------------
         while (const std::optional event = window.pollEvent())
@@ -400,6 +400,8 @@ int main()
                                     med_msgCat(line, sizeof line, " | ");
                                     med_msgCat(line, sizeof line, dd ? dd->getName() : "?");
                                     med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, dd ? dd->getSpecialization() : "?");
+                                    med_msgCat(line, sizeof line, " | ");
                                     med_msgCat(line, sizeof line, all[i].getAppointmentDate());
                                     med_msgCat(line, sizeof line, " | ");
                                     med_msgCat(line, sizeof line, all[i].getAppointmentSlot());
@@ -428,7 +430,10 @@ int main()
                                 if (all[i].getPatientId() == sessionPatient->getId())
                                 {
                                     char line[1024];
+                                    const Doctor* dd = doctors.findByID(all[i].getDoctorId());
                                     mystrcpy(line, all[i].getPrescriptionDate());
+                                    med_msgCat(line, sizeof line, " | ");
+                                    med_msgCat(line, sizeof line, dd ? dd->getName() : "?");
                                     med_msgCat(line, sizeof line, " | ");
                                     med_msgCat(line, sizeof line, all[i].getMedicine());
                                     med_msgCat(line, sizeof line, " | ");
@@ -576,7 +581,7 @@ int main()
                         med_msgClear(patHistIdBuf, sizeof patHistIdBuf);
                         state = UiState::DoctorViewHistory;
                     }
-                    else if (contains(pos, dLogout.first) || contains(pos, btnBack.first))
+                    else if (contains(pos, dLogout.first))
                     {
                         loggedDoctorId = -1; sessionDoctor = nullptr;
                         state = UiState::RoleSelect;
@@ -666,6 +671,8 @@ int main()
                         state = UiState::AdminAppointments;
                     else if (contains(pos, aUnpaid.first))
                         state = UiState::AdminUnpaidBills;
+                    else if (state == UiState::AdminDailyReport && contains(pos, btnBack.first))
+                        state = UiState::AdminHome;
                     else if (contains(pos, aSecLog.first))
                         state = UiState::AdminSecurityLog;
                     else if (contains(pos, aLogout.first) || contains(pos, btnBack.first))
@@ -726,6 +733,10 @@ int main()
                 // Admin unpaid bills back
                 else if (state == UiState::AdminUnpaidBills && contains(pos, btnBack.first))
                     state = UiState::AdminHome;
+
+                //Admin Daily report Back
+                else if (contains(pos, aReport.first))
+                    state = UiState::AdminDailyReport;
 
                 // Admin security log back
                 else if (state == UiState::AdminSecurityLog && contains(pos, btnBack.first))
@@ -854,6 +865,9 @@ int main()
         }
 
         window.draw(title);
+        body.setPosition({ 40.f, 160.f });
+        body.setCharacterSize(16u);
+        body.setFillColor(sf::Color::White);
 
         // -----------------------------------------------------------------
         // DRAW UI PER STATE
@@ -910,7 +924,9 @@ int main()
         else if (state == UiState::PatientBook)
         {
             sf::Text hint(font, "Tab=next field  Backspace=delete", 15u);
-            hint.setFillColor(sf::Color::White); hint.setPosition({ 40.f, 120.f }); window.draw(hint);
+            hint.setFillColor(sf::Color::White); hint.setPosition({ 40.f, 120.f });
+            body.setPosition({ 40.f, 175.f });
+            window.draw(hint);
             med_msgClear(bodyText, sizeof bodyText);
             med_msgCat(bodyText, sizeof bodyText, "Specialization: "); med_msgCat(bodyText, sizeof bodyText, specBuf);
             med_msgCat(bodyText, sizeof bodyText, "\nDoctor ID:      "); med_msgCat(bodyText, sizeof bodyText, docIdBuf);
@@ -947,20 +963,26 @@ int main()
         }
         else if (state == UiState::PatientViewAppointments)
         {
+            body.setCharacterSize(14u);
             body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
             window.draw(body);
+            body.setCharacterSize(16u);
             drawPair(window, btnBack);
         }
         else if (state == UiState::PatientViewRecords)
         {
+            body.setCharacterSize(14u);
             body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
             window.draw(body);
+            body.setCharacterSize(16u);
             drawPair(window, btnBack);
         }
         else if (state == UiState::PatientViewBills)
         {
+            body.setCharacterSize(14u);
             body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
             window.draw(body);
+            body.setCharacterSize(16u);
             drawPair(window, btnBack);
         }
 
@@ -969,7 +991,7 @@ int main()
         {
             if (sessionDoctor)
             {
-                char welcome[128] = "Welcome, Dr. ";
+                char welcome[128] = "Welcome, ";
                 mystrcat(welcome, sessionDoctor->getName());
                 mystrcat(welcome, " | ");
                 mystrcat(welcome, sessionDoctor->getSpecialization());
@@ -1077,6 +1099,13 @@ int main()
             med_formatUnpaidBillsAll(bills, patients, bodyText, sizeof bodyText);
             body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
             window.draw(body); drawPair(window, btnBack);
+        }
+        else if (state == UiState::AdminDailyReport)
+        {
+            med_formatDailyReport(appointments, bills, patients, doctors, bodyText, sizeof bodyText);
+            body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
+            window.draw(body);
+            drawPair(window, btnBack);
         }
         else if (state == UiState::AdminSecurityLog)
         {

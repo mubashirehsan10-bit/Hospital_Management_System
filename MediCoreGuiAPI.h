@@ -70,6 +70,9 @@ void med_guiWritePrescription(FileHandler& fh, Doctor* doc,
 void med_formatTodayAppointments(const Storage<Appointment>& appointments,
     const Storage<Patient>& patients, const Doctor* doc,
     char* out, int cap);
+void med_formatDailyReport(const Storage<Appointment>& appointments,
+    const Storage<Bill>& bills, const Storage<Patient>& patients,
+    const Storage<Doctor>& doctors, char* out, int cap);
 
 void med_formatPatientHistory(const Storage<Prescription>& prescriptions,
     const Storage<Appointment>& appointments, const Doctor* doc,

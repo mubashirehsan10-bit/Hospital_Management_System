@@ -115,7 +115,7 @@ Patient* loginPatient(Validator validator, Storage<Patient>& p)
     int id = 1;
     int attempts = 0;
 
-    while (attempts <= 3)
+    while (attempts < 3)
     {
 
         do
@@ -1480,22 +1480,131 @@ void med_guiDischargePatient(FileHandler& fh, Storage<Patient>& patients, Storag
 
 void med_formatPatientList(const Storage<Patient>& patients, const Storage<Bill>& bills, char* out, int cap)
 {
-	(void)bills;
-	med_msgClear(out, cap);
-	const Patient* all = patients.getAll();
-	for (int i = 0; i < patients.size(); i++)
-	{
-		char idbuf[20];
-		char line[256];
-		myitoa(all[i].getId(), idbuf);
-		mystrcpy(line, idbuf);
-		med_msgCat(line, sizeof line, " | ");
-		med_msgCat(line, sizeof line, all[i].getName());
-		med_msgCat(line, sizeof line, "\n");
-		med_msgCat(out, cap, line);
-	}
-}
+    med_msgClear(out, cap);
+    const Patient* all = patients.getAll();
+    for (int i = 0; i < patients.size(); i++)
+    {
+        // count unpaid bills
+        int unpaidCount = 0;
+        const Bill* allBills = bills.getAll();
+        for (int j = 0; j < bills.size(); j++)
+            if (allBills[j].getPatientId() == all[i].getId() &&
+                mystrcmpIgnoreCase(allBills[j].getStatus(), "unpaid") == 0)
+                unpaidCount++;
 
+        char idbuf[20], agebuf[20], unpaidbuf[20];
+        char line[512];
+        myitoa(all[i].getId(), idbuf);
+        myitoa(all[i].getAge(), agebuf);
+        myitoa(unpaidCount, unpaidbuf);
+
+        mystrcpy(line, idbuf);
+        med_msgCat(line, sizeof line, " | ");
+        med_msgCat(line, sizeof line, all[i].getName());
+        med_msgCat(line, sizeof line, " | Age:");
+        med_msgCat(line, sizeof line, agebuf);
+        med_msgCat(line, sizeof line, " | ");
+        med_msgCat(line, sizeof line, all[i].getContact());
+        med_msgCat(line, sizeof line, " | Unpaid Bills:");
+        med_msgCat(line, sizeof line, unpaidbuf);
+        med_msgCat(line, sizeof line, "\n");
+        med_msgCat(out, cap, line);
+    }
+}
+void med_formatDailyReport(const Storage<Appointment>& appointments,
+    const Storage<Bill>& bills, const Storage<Patient>& patients,
+    const Storage<Doctor>& doctors, char* out, int cap)
+{
+    med_msgClear(out, cap);
+    char today[15];
+    getTodayDate(today);
+
+    // count appointments
+    int total = 0, pending = 0, completed = 0, noshow = 0, cancelled = 0;
+    const Appointment* allA = appointments.getAll();
+    for (int i = 0; i < appointments.size(); i++)
+    {
+        if (mystrcmp(allA[i].getAppointmentDate(), today) != 0) continue;
+        total++;
+        if (mystrcmpIgnoreCase(allA[i].getAppointmentStatus(), "pending") == 0) pending++;
+        else if (mystrcmpIgnoreCase(allA[i].getAppointmentStatus(), "completed") == 0) completed++;
+        else if (mystrcmpIgnoreCase(allA[i].getAppointmentStatus(), "no-show") == 0) noshow++;
+        else if (mystrcmpIgnoreCase(allA[i].getAppointmentStatus(), "cancelled") == 0) cancelled++;
+    }
+
+    // revenue
+    float revenue = 0;
+    const Bill* allB = bills.getAll();
+    for (int i = 0; i < bills.size(); i++)
+        if (mystrcmp(allB[i].getAppointmentDate(), today) == 0 &&
+            mystrcmpIgnoreCase(allB[i].getStatus(), "paid") == 0)
+            revenue += allB[i].getAmount();
+
+    // build output
+    char tmp[64];
+    med_msgCat(out, cap, "=== Daily Report: ");
+    med_msgCat(out, cap, today);
+    med_msgCat(out, cap, " ===\n\n");
+
+    med_msgCat(out, cap, "Total Appointments: "); myitoa(total, tmp); med_msgCat(out, cap, tmp);
+    med_msgCat(out, cap, " (Pending:"); myitoa(pending, tmp);   med_msgCat(out, cap, tmp);
+    med_msgCat(out, cap, " Completed:"); myitoa(completed, tmp); med_msgCat(out, cap, tmp);
+    med_msgCat(out, cap, " No-show:"); myitoa(noshow, tmp);    med_msgCat(out, cap, tmp);
+    med_msgCat(out, cap, " Cancelled:"); myitoa(cancelled, tmp); med_msgCat(out, cap, tmp);
+    med_msgCat(out, cap, ")\n\n");
+
+    med_msgCat(out, cap, "Revenue Today: PKR ");
+    myftoa(revenue, tmp); med_msgCat(out, cap, tmp);
+    med_msgCat(out, cap, "\n\nUnpaid Bills:\n");
+
+    // unpaid patients
+    const Patient* allP = patients.getAll();
+    for (int i = 0; i < patients.size(); i++)
+    {
+        float owed = 0;
+        for (int j = 0; j < bills.size(); j++)
+            if (allB[j].getPatientId() == allP[i].getId() &&
+                mystrcmpIgnoreCase(allB[j].getStatus(), "unpaid") == 0)
+                owed += allB[j].getAmount();
+        if (owed > 0)
+        {
+            char line[256];
+            mystrcpy(line, allP[i].getName());
+            med_msgCat(line, sizeof line, " | PKR ");
+            myftoa(owed, tmp); med_msgCat(line, sizeof line, tmp);
+            med_msgCat(line, sizeof line, "\n");
+            med_msgCat(out, cap, line);
+        }
+    }
+
+    med_msgCat(out, cap, "\nDoctor Summary:\n");
+    const Doctor* allD = doctors.getAll();
+    for (int i = 0; i < doctors.size(); i++)
+    {
+        int dc = 0, dp = 0, dn = 0;
+        for (int j = 0; j < appointments.size(); j++)
+        {
+            if (allA[j].getDoctorId() != allD[i].getId()) continue;
+            if (mystrcmp(allA[j].getAppointmentDate(), today) != 0) continue;
+            if (mystrcmpIgnoreCase(allA[j].getAppointmentStatus(), "completed") == 0) dc++;
+            else if (mystrcmpIgnoreCase(allA[j].getAppointmentStatus(), "pending") == 0) dp++;
+            else if (mystrcmpIgnoreCase(allA[j].getAppointmentStatus(), "no-show") == 0) dn++;
+        }
+        if (dc + dp + dn > 0)
+        {
+            char line[256];
+            mystrcpy(line, allD[i].getName());
+            med_msgCat(line, sizeof line, " | C:");
+            myitoa(dc, tmp); med_msgCat(line, sizeof line, tmp);
+            med_msgCat(line, sizeof line, " P:");
+            myitoa(dp, tmp); med_msgCat(line, sizeof line, tmp);
+            med_msgCat(line, sizeof line, " N:");
+            myitoa(dn, tmp); med_msgCat(line, sizeof line, tmp);
+            med_msgCat(line, sizeof line, "\n");
+            med_msgCat(out, cap, line);
+        }
+    }
+}
 void med_formatDoctorList(const Storage<Doctor>& doctors, char* out, int cap)
 {
 	med_msgClear(out, cap);
@@ -1537,21 +1646,48 @@ void med_formatAppointmentList(const Storage<Appointment>& appointments,
 
 void med_formatUnpaidBillsAll(const Storage<Bill>& bills, const Storage<Patient>& patients, char* out, int cap)
 {
-	med_msgClear(out, cap);
-	const Bill* all = bills.getAll();
-	for (int i = 0; i < bills.size(); i++)
-	{
-		if (mystrcmpIgnoreCase(all[i].getStatus(), "unpaid") != 0) continue;
-		const Patient* pp = patients.findByID(all[i].getPatientId());
-		char idbuf[20];
-		char line[256];
-		myitoa(all[i].getId(), idbuf);
-		mystrcpy(line, idbuf);
-		med_msgCat(line, sizeof line, " | ");
-		med_msgCat(line, sizeof line, pp ? pp->getName() : "?");
-		med_msgCat(line, sizeof line, "\n");
-		med_msgCat(out, cap, line);
-	}
+    med_msgClear(out, cap);
+    const Bill* all = bills.getAll();
+
+    // get today
+    char today[15];
+    getTodayDate(today);
+    int ty = myatoi(today + 6);
+    int tm = myatoi(today + 3);
+    int td = myatoi(today);
+
+    for (int i = 0; i < bills.size(); i++)
+    {
+        if (mystrcmpIgnoreCase(all[i].getStatus(), "unpaid") != 0) continue;
+        const Patient* pp = patients.findByID(all[i].getPatientId());
+
+        // check overdue
+        const char* d = all[i].getAppointmentDate();
+        int by = myatoi(d + 6);
+        int bm = myatoi(d + 3);
+        int bd = myatoi(d);
+
+        // convert to days roughly
+        int todayDays = ty * 365 + tm * 30 + td;
+        int billDays = by * 365 + bm * 30 + bd;
+        bool overdue = (todayDays - billDays) > 7;
+
+        char idbuf[20], amtbuf[32];
+        char line[512];
+        myitoa(all[i].getId(), idbuf);
+        myftoa(all[i].getAmount(), amtbuf);
+
+        mystrcpy(line, idbuf);
+        med_msgCat(line, sizeof line, " | ");
+        med_msgCat(line, sizeof line, pp ? pp->getName() : "?");
+        med_msgCat(line, sizeof line, " | PKR ");
+        med_msgCat(line, sizeof line, amtbuf);
+        med_msgCat(line, sizeof line, " | ");
+        med_msgCat(line, sizeof line, d);
+        if (overdue) med_msgCat(line, sizeof line, " [OVERDUE]");
+        med_msgCat(line, sizeof line, "\n");
+        med_msgCat(out, cap, line);
+    }
 }
 void med_guiMarkComplete(FileHandler& fh, Doctor* doc,
 	Storage<Appointment>& appointments, int apptId, char* msg, int msgCap)
