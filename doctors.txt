@@ -1,5 +1,3 @@
 doctor_id,name,specialization,contact,password,fee 
 1,Dr. Sara Khan,Cardiology,03111234567,doc456,1500.00
-
-
-2,Dr.Aftab Alam,Neurology,03144007564,aftab123,1700.00
+2,Dr.Nawab Saeed,Physiotherapy,03229834561,nawab123,2500.00

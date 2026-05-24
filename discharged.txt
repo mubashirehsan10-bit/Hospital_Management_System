@@ -1,1 +1,5 @@
-patient_id,name,age,gender,contact,password,balance
+patient_id,name,age,gender,contact,password,balance1,1,1,15-04-2025,09:00,completed
+1,1,1,1500.00,paid,15-04-2025
+1,1,1,1,15-04-2025,Paracetamol 500mg;Amoxicillin 250mg,Take after  meals
+1,Ahmed Ali,28,M,03001234567,pass123,157362.87
+1,Ahmed Ali,28,M,03001234567,pass123,5000.00

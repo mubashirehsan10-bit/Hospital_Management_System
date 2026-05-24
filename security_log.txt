@@ -1,3 +1,4 @@
 timestamp,role,entered_id,result 
 15-04-2025 09:32:11,Patient,99,FAILED
 
+24-05-2026 10:07:20,Patient,2,FAILED
