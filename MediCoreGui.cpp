@@ -545,13 +545,7 @@ int main()
                         med_msgClear(dateBuf, sizeof dateBuf);
                         med_msgClear(slotBuf, sizeof slotBuf);
                     }
-                    else if (mp->position.x >= 280 && mp->position.x <= 630)
-                    {
-                        if (mp->position.y >= 420 && mp->position.y <= 458)
-                            loginFocus = 0;
-                        else if (mp->position.y >= 480 && mp->position.y <= 518)
-                            loginFocus = 1;
-                    }
+
                     else if (contains(pos, pCancel.first)) { state = UiState::PatientCancel; med_msgClear(apptCancelBuf, sizeof apptCancelBuf); }
                     else if (contains(pos, pViewAppts.first))
                     {
@@ -1313,11 +1307,18 @@ int main()
         }
         else if (state == UiState::DoctorMarkComplete || state == UiState::DoctorMarkNoShow)
         {
+            // draw label separately above the input box
             const char* label = (state == UiState::DoctorMarkComplete) ?
-                "Mark Complete - Enter Appointment ID:" : "Mark No-Show - Enter Appointment ID:";
-            drawInputField(label, apptIdBuf, 80.f, 220.f, 350.f, 38.f, true);
+                "Mark Appointment Complete" : "Mark Appointment No-Show";
+
+            sf::Text heading(font, sf::String::fromUtf8(label, label + mystrlen(label)), 20u);
+            heading.setFillColor(sf::Color(0, 255, 220));
+            heading.setPosition({ 80.f, 185.f });
+            window.draw(heading);
+
+            drawInputField("Appointment ID:", apptIdBuf, 80.f, 230.f, 350.f, 38.f, true);
             drawPair(window, btnSubmit); drawPair(window, btnBack);
-        }
+            }
         else if (state == UiState::DoctorWritePrescription)
         {
             sf::Text hint(font, "Click input fields to select. Tab=next field. Backspace=delete.", 16u);
