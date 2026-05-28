@@ -1,5 +1,5 @@
 patient_id,name,age,gender,contact,password,balance
-2,Sara Khan,34,F,03114567890,sara@2024,4400.50
+2,Sara Khan,34,F,03114567890,sara@2024,2900.50
 3,Usman Tariq,41,M,03221234567,usman#91,1200.75
 4,Ayesha Malik,23,F,03339876543,ayesha_23,2750.00
 5,Hamza Iqbal,30,M,03455678901,hamza!30,4200.00
