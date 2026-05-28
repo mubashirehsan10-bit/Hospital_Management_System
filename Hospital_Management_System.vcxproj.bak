@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -132,37 +132,37 @@ sfml-window.lib
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\\Admin.cpp" />
-    <ClCompile Include="src\\Appointment.cpp" />
-    <ClCompile Include="src\\Bill.cpp" />
-    <ClCompile Include="src\\Doctor.cpp" />
-    <ClCompile Include="src\\helpers\\FileHandler.cpp" />
-    <ClCompile Include="src\\helpers\\HospitalException.cpp" />
-    <ClCompile Include="src\\gui\\MediCoreGui.cpp" />
-    <ClCompile Include="src\\gui\\MediCoreGuiAPI.cpp" />
-    <ClCompile Include="src\\Patient.cpp" />
-    <ClCompile Include="src\\Person.cpp" />
-    <ClCompile Include="src\\Prescription.cpp" />
-    <ClCompile Include="src\\helpers\\utility.cpp" />
-    <ClCompile Include="src\\helpers\\Validator.cpp" />
+    <ClCompile Include="Admin.cpp" />
+    <ClCompile Include="Appointment.cpp" />
+    <ClCompile Include="Bill.cpp" />
+    <ClCompile Include="Doctor.cpp" />
+    <ClCompile Include="FileHandler.cpp" />
+    <ClCompile Include="HospitalException.cpp" />
+    <ClCompile Include="MediCoreGui.cpp" />
+    <ClCompile Include="MediCoreGuiAPI.cpp" />
+    <ClCompile Include="Patient.cpp" />
+    <ClCompile Include="Person.cpp" />
+    <ClCompile Include="Prescription.cpp" />
+    <ClCompile Include="utility.cpp" />
+    <ClCompile Include="Validator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\\Appointment.h" />
-    <ClInclude Include="include\\Bill.h" />
-    <ClInclude Include="include\\Doctor.h" />
-    <ClInclude Include="include\\FileHandler.h" />
-    <ClInclude Include="include\\FileNotFoundException.h" />
-    <ClInclude Include="include\\HospitalException.h" />
-    <ClInclude Include="include\\InsufficientFundsException.h" />
-    <ClInclude Include="include\\InvalidInputException.h" />
-    <ClInclude Include="include\\MediCoreGuiAPI.h" />
-    <ClInclude Include="include\\Patient.h" />
-    <ClInclude Include="include\\Person.h" />
-    <ClInclude Include="include\\Prescription.h" />
-    <ClInclude Include="include\\SlotUnavailableException.h" />
-    <ClInclude Include="include\\Storage.h" />
-    <ClInclude Include="include\\utility.h" />
-    <ClInclude Include="include\\Validator.h" />
+    <ClInclude Include="Appointment.h" />
+    <ClInclude Include="Bill.h" />
+    <ClInclude Include="Doctor.h" />
+    <ClInclude Include="FileHandler.h" />
+    <ClInclude Include="FileNotFoundException.h" />
+    <ClInclude Include="HospitalException.h" />
+    <ClInclude Include="InsufficientFundsException.h" />
+    <ClInclude Include="InvalidInputException.h" />
+    <ClInclude Include="MediCoreGuiAPI.h" />
+    <ClInclude Include="Patient.h" />
+    <ClInclude Include="Person.h" />
+    <ClInclude Include="Prescription.h" />
+    <ClInclude Include="SlotUnavailableException.h" />
+    <ClInclude Include="Storage.h" />
+    <ClInclude Include="utility.h" />
+    <ClInclude Include="Validator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="scripts\reorganize.ps1" />

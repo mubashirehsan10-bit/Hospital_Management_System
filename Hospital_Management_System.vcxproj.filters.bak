@@ -15,93 +15,93 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\\helpers\\utility.cpp">
+    <ClCompile Include="utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\helpers\\HospitalException.cpp">
+    <ClCompile Include="HospitalException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\helpers\\Validator.cpp">
+    <ClCompile Include="Validator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\Person.cpp">
+    <ClCompile Include="Person.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\Patient.cpp">
+    <ClCompile Include="Patient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\Appointment.cpp">
+    <ClCompile Include="Appointment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\Bill.cpp">
+    <ClCompile Include="Bill.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\Prescription.cpp">
+    <ClCompile Include="Prescription.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\helpers\\FileHandler.cpp">
+    <ClCompile Include="FileHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\Doctor.cpp">
+    <ClCompile Include="Doctor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\Admin.cpp">
+    <ClCompile Include="Admin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\gui\\MediCoreGui.cpp">
+    <ClCompile Include="MediCoreGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\\gui\\MediCoreGuiAPI.cpp">
+    <ClCompile Include="MediCoreGuiAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\\HospitalException.h">
+    <ClInclude Include="HospitalException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\utility.h">
+    <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\FileNotFoundException.h">
+    <ClInclude Include="FileNotFoundException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\InsufficientFundsException.h">
+    <ClInclude Include="InsufficientFundsException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\InvalidInputException.h">
+    <ClInclude Include="InvalidInputException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\SlotUnavailableException.h">
+    <ClInclude Include="SlotUnavailableException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Validator.h">
+    <ClInclude Include="Validator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Person.h">
+    <ClInclude Include="Person.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Patient.h">
+    <ClInclude Include="Patient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Doctor.h">
+    <ClInclude Include="Doctor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Storage.h">
+    <ClInclude Include="Storage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Appointment.h">
+    <ClInclude Include="Appointment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Bill.h">
+    <ClInclude Include="Bill.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\Prescription.h">
+    <ClInclude Include="Prescription.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\FileHandler.h">
+    <ClInclude Include="FileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\\MediCoreGuiAPI.h">
+    <ClInclude Include="MediCoreGuiAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
