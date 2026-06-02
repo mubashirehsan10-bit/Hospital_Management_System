@@ -1,4 +1,4 @@
-#include "FileHandler.h"
+﻿#include "FileHandler.h"
 #include<iostream>
 #include "utility.h"
 #include "FileNotFoundException.h"
@@ -8,7 +8,7 @@ using namespace std;
 // load
 void FileHandler::loadPatients(Storage<Patient>& storage)
 {
-	ifstream fin("patients.txt");
+	ifstream fin("data/patients.txt");
 	if (!fin)
 	{
 		throw FileNotFoundException("patients.txt NOT FOUND"); // throwing exception
@@ -62,7 +62,7 @@ void FileHandler::loadPatients(Storage<Patient>& storage)
 void FileHandler::loadDoctors(Storage<Doctor>& storage)
 {
 
-	ifstream fin("doctors.txt");
+	ifstream fin("data/doctors.txt");
 	if (!fin)
 	{
 		throw FileNotFoundException("doctors.txt NOT FOUND"); // throwing exception
@@ -110,7 +110,7 @@ void FileHandler::loadDoctors(Storage<Doctor>& storage)
 }
 void FileHandler::loadAdmin(Admin*& admin) // just 1 admin that's why pointer
 {
-	ifstream fin("admin.txt");
+	ifstream fin("data/admin.txt");
 	if (!fin)
 	{
 		throw FileNotFoundException("admin.txt NOT FOUND!!"); // throwing exception
@@ -144,7 +144,7 @@ void FileHandler::loadAdmin(Admin*& admin) // just 1 admin that's why pointer
 void FileHandler::loadAppointments(Storage<Appointment>& storage)
 {
 
-	ifstream fin("appointments.txt");
+	ifstream fin("data/appointments.txt");
 	if (!fin)
 	{
 		throw FileNotFoundException("appointments.txt NOT FOUND"); // throwing exception
@@ -193,7 +193,7 @@ void FileHandler::loadAppointments(Storage<Appointment>& storage)
 void FileHandler::loadBills(Storage<Bill>& storage)
 {
 
-	ifstream fin("bills.txt");
+	ifstream fin("data/bills.txt");
 	if (!fin)
 	{
 		throw FileNotFoundException("bills.txt NOT FOUND"); // throwing exception
@@ -242,7 +242,7 @@ void FileHandler::loadBills(Storage<Bill>& storage)
 }
 void FileHandler::loadPrescriptions(Storage<Prescription>& storage)
 {
-	ifstream fin("prescriptions.txt");
+	ifstream fin("data/prescriptions.txt");
 	if (!fin)
 	{
 		throw FileNotFoundException("prescriptions.txt NOT FOUND"); // throwing exception
@@ -295,7 +295,7 @@ void FileHandler::loadPrescriptions(Storage<Prescription>& storage)
 // append
 void FileHandler::appendPatient(const Patient& p)
 {
-	ofstream fout("patients.txt", ios::app);
+	ofstream fout("data/patients.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("patients.txt not found!");
 
@@ -322,7 +322,7 @@ void FileHandler::appendDoctor(const Doctor& d)
 {
 	//doctor_id,name,specialization,contact,password,fee
 
-	ofstream fout("doctors.txt", ios::app);
+	ofstream fout("data/doctors.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("doctors.txt not found!");
 
@@ -345,7 +345,7 @@ void FileHandler::appendDoctor(const Doctor& d)
 void FileHandler::appendAppointment(const Appointment& a)
 {
 	//appointment_id, patient_id, doctor_id, date, time_slot, Status
-	ofstream fout("appointments.txt", ios::app);
+	ofstream fout("data/appointments.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("appointments.txt not found!");
 
@@ -370,7 +370,7 @@ void FileHandler::appendAppointment(const Appointment& a)
 void FileHandler::appendBill(const Bill& b)
 {
 	//bill_id, patient_id, appointment_id, amount, status, date
-	ofstream fout("bills.txt", ios::app);
+	ofstream fout("data/bills.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("bills.txt not found!");
 
@@ -396,7 +396,7 @@ void FileHandler::appendBill(const Bill& b)
 void FileHandler::appendPrescription(const Prescription& p)
 {
 	//prescription_id, appointment_id, patient_id, doctor_id, date, medicines, notes
-	ofstream fout("prescriptions.txt", ios::app);
+	ofstream fout("data/prescriptions.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("prescriptions.txt not found!");
 
@@ -424,7 +424,7 @@ void FileHandler::appendPrescription(const Prescription& p)
 void FileHandler::appendSecurityLog(const char* timestamp, const char* role,
 	const char* enteredId, const char* result)
 {
-	ofstream fout("security_log.txt", ios::app);
+	ofstream fout("data/security_log.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("security_log.txt not found!");
 
@@ -441,7 +441,7 @@ void FileHandler::appendSecurityLog(const char* timestamp, const char* role,
 // just printing file 
 void FileHandler::readSecurityLog()
 {
-	ifstream Fread("security_log.txt");
+	ifstream Fread("data/security_log.txt");
 	if (!Fread)
 		throw FileNotFoundException("security_log.txt NOT FOUND!!!");
 
@@ -461,8 +461,8 @@ void FileHandler::readSecurityLog()
 // update by ID
 void FileHandler::updatePatient(int id, const Patient& p)
 {
-	ifstream fin("patients.txt");
-	ofstream fout("temp.txt");
+	ifstream fin("data/patients.txt");
+	ofstream fout("data/temp.txt");
 
 	char line[500];
 	myreadLine(fin, line, 500);
@@ -496,13 +496,13 @@ void FileHandler::updatePatient(int id, const Patient& p)
 
 	fin.close();
 	fout.close();
-	remove("patients.txt");
-	rename("temp.txt", "patients.txt");
+	remove("data/patients.txt");
+	rename("data/temp.txt", "data/patients.txt");
 }
 void FileHandler::updateAppointment(int id, const Appointment& a)
 {
-	ifstream fin("appointments.txt");
-	ofstream fout("temp.txt");
+	ifstream fin("data/appointments.txt");
+	ofstream fout("data/temp.txt");
 
 	//appointment_id, patient_id, doctor_id, date, time_slot, Status
 
@@ -538,14 +538,14 @@ void FileHandler::updateAppointment(int id, const Appointment& a)
 
 	fin.close();
 	fout.close();
-	remove("appointments.txt");
-	rename("temp.txt", "appointments.txt");
+	remove("data/appointments.txt");
+	rename("data/temp.txt", "data/appointments.txt");
 
 }
 void FileHandler::updateBill(int id, const Bill& b)
 {
-	ifstream fin("bills.txt");
-	ofstream fout("temp.txt");
+	ifstream fin("data/bills.txt");
+	ofstream fout("data/temp.txt");
 
 	//bill_id,patient_id,appointment_id,amount,status,date
 
@@ -581,19 +581,19 @@ void FileHandler::updateBill(int id, const Bill& b)
 
 	fin.close();
 	fout.close();
-	remove("bills.txt");
-	rename("temp.txt", "bills.txt");
+	remove("data/bills.txt");
+	rename("data/temp.txt", "data/bills.txt");
 
 }
 
 // delete by ID
 void FileHandler::deleteDoctor(int id)
 {
-	ifstream fin("doctors.txt");
+	ifstream fin("data/doctors.txt");
 	if (!fin)
 		throw FileNotFoundException("doctors.txt NOT FOUND!!!");
 
-	ofstream fout("temp.txt");
+	ofstream fout("data/temp.txt");
 
 	char line[500];
 	myreadLine(fin, line, 500); // skip header
@@ -618,17 +618,17 @@ void FileHandler::deleteDoctor(int id)
 	fin.close();
 	fout.close();
 
-	remove("doctors.txt");
-	rename("temp.txt", "doctors.txt");
+	remove("data/doctors.txt");
+	rename("data/temp.txt", "data/doctors.txt");
 
 }
 void FileHandler::deletePatient(int id)
 {
-	ifstream fin("patients.txt");
+	ifstream fin("data/patients.txt");
 	if (!fin)
 		throw FileNotFoundException("patients.txt not found!");
 
-	ofstream fout("temp.txt");
+	ofstream fout("data/temp.txt");
 
 	char line[500];
 	myreadLine(fin, line, 500); // skip header
@@ -652,15 +652,15 @@ void FileHandler::deletePatient(int id)
 	fin.close();
 	fout.close();
 
-	remove("patients.txt");
-	rename("temp.txt", "patients.txt");
+	remove("data/patients.txt");
+	rename("data/temp.txt", "data/patients.txt");
 }
 
 // discharged
 void FileHandler::appendDischarged(const Patient& p)
 {
 	//patient_id,name,pid,gender,contact,password,aid
-	ofstream fout("discharged.txt", ios::app);
+	ofstream fout("data/discharged.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("discharged.txt not found!");
 
@@ -685,7 +685,7 @@ void FileHandler::appendDischarged(const Patient& p)
 
 void FileHandler::appendArchivedRecord(const char* line)
 {
-	ofstream fout("discharged.txt", ios::app);
+	ofstream fout("data/discharged.txt", ios::app);
 	if (!fout)
 		throw FileNotFoundException("discharged.txt not found!");
 	fout << line << "\n";
@@ -694,10 +694,10 @@ void FileHandler::appendArchivedRecord(const char* line)
 
 void FileHandler::deleteAppointmentsByPatientId(int patientId)
 {
-	ifstream fin("appointments.txt");
+	ifstream fin("data/appointments.txt");
 	if (!fin)
 		throw FileNotFoundException("appointments.txt NOT FOUND!!!");
-	ofstream fout("temp.txt");
+	ofstream fout("data/temp.txt");
 	char line[500];
 	myreadLine(fin, line, 500);
 	fout << line << "\n";
@@ -715,16 +715,16 @@ void FileHandler::deleteAppointmentsByPatientId(int patientId)
 	}
 	fin.close();
 	fout.close();
-	remove("appointments.txt");
-	rename("temp.txt", "appointments.txt");
+	remove("data/appointments.txt");
+	rename("data/temp.txt", "data/appointments.txt");
 }
 
 void FileHandler::deleteBillsByPatientId(int patientId)
 {
-	ifstream fin("bills.txt");
+	ifstream fin("data/bills.txt");
 	if (!fin)
 		throw FileNotFoundException("bills.txt NOT FOUND!!!");
-	ofstream fout("temp.txt");
+	ofstream fout("data/temp.txt");
 	char line[500];
 	myreadLine(fin, line, 500);
 	fout << line << "\n";
@@ -742,16 +742,16 @@ void FileHandler::deleteBillsByPatientId(int patientId)
 	}
 	fin.close();
 	fout.close();
-	remove("bills.txt");
-	rename("temp.txt", "bills.txt");
+	remove("data/bills.txt");
+	rename("data/temp.txt", "data/bills.txt");
 }
 
 void FileHandler::deletePrescriptionsByPatientId(int patientId)
 {
-	ifstream fin("prescriptions.txt");
+	ifstream fin("data/prescriptions.txt");
 	if (!fin)
 		throw FileNotFoundException("prescriptions.txt NOT FOUND!!!");
-	ofstream fout("temp.txt");
+	ofstream fout("data/temp.txt");
 	char line[500];
 	myreadLine(fin, line, 500);
 	fout << line << "\n";
@@ -770,6 +770,6 @@ void FileHandler::deletePrescriptionsByPatientId(int patientId)
 	}
 	fin.close();
 	fout.close();
-	remove("prescriptions.txt");
-	rename("temp.txt", "prescriptions.txt");
+	remove("data/prescriptions.txt");
+	rename("data/temp.txt", "data/prescriptions.txt");
 }

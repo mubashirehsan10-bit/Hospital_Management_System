@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+ï»¿#include <SFML/Graphics.hpp>
 #include "MediCoreGuiAPI.h"
 #include "utility.h"
 #include "Validator.h"
@@ -8,6 +8,7 @@
 #include "Admin.h"
 #include <fstream>
 #include <filesystem>
+#include <cmath>
 
 namespace AssetPaths
 {
@@ -33,9 +34,10 @@ static bool loadTextureFromAssets(sf::Texture& tex, const char* fileName)
     return tex.loadFromFile(path);
 }
 
-static bool contains(sf::Vector2f p, const sf::RectangleShape& r)
+static bool containsScaled(sf::Vector2f p, float bx, float by, float bw, float bh, float sx, float sy)
 {
-    return r.getGlobalBounds().contains(p);
+    sf::FloatRect r({bx * sx, by * sy}, {bw * sx, bh * sy});
+    return r.contains(p);
 }
 
 enum class UiState
@@ -117,6 +119,24 @@ int main()
     sf::RenderWindow window(sf::VideoMode({ 1280u, 720u }), "MediCore Hospital", sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
+    // scaling factors for responsive layout
+    float scaleX = 1.f, scaleY = 1.f;
+    auto updateScale = [&](unsigned int w, unsigned int h)
+    {
+        scaleX = (float)w / 1280.f;
+        scaleY = (float)h / 720.f;
+        // rescale sprites
+        auto scaleSprLocal = [&](sf::Sprite& s)
+        {
+            auto sz = s.getTexture().getSize();
+            if (sz.x == 0 || sz.y == 0) return;
+            s.setScale({ (float)w / sz.x, (float)h / sz.y });
+        };
+        // safe-guard: textures may be empty
+        // will call after textures created below
+        (void)scaleSprLocal;
+    };
+
     sf::Font font;
     if (!font.openFromFile("assets/font.ttf"))
         font.openFromFile("C:/Windows/Fonts/arial.ttf");
@@ -154,15 +174,15 @@ int main()
 
     sf::Sprite sprMain(texMain), sprPatient(texPatient), sprDoctor(texDoctor), sprAdmin(texAdmin);
 
-    auto scaleSpr = [&](sf::Sprite& s, bool has)
+    auto scaleAllSprites = [&]()
     {
-            if (!has) return;
-            auto sz = s.getTexture().getSize();
-            if (sz.x == 0 || sz.y == 0) return;
-            s.setScale({ (float)window.getSize().x / sz.x, (float)window.getSize().y / sz.y });
+        if (hasMain) { auto sz = sprMain.getTexture().getSize(); if (sz.x) sprMain.setScale({ (float)window.getSize().x / sz.x, (float)window.getSize().y / sz.y }); }
+        if (hasPat) { auto sz = sprPatient.getTexture().getSize(); if (sz.x) sprPatient.setScale({ (float)window.getSize().x / sz.x, (float)window.getSize().y / sz.y }); }
+        if (hasDoc) { auto sz = sprDoctor.getTexture().getSize(); if (sz.x) sprDoctor.setScale({ (float)window.getSize().x / sz.x, (float)window.getSize().y / sz.y }); }
+        if (hasAdm) { auto sz = sprAdmin.getTexture().getSize(); if (sz.x) sprAdmin.setScale({ (float)window.getSize().x / sz.x, (float)window.getSize().y / sz.y }); }
     };
-    scaleSpr(sprMain, hasMain); scaleSpr(sprPatient, hasPat);
-    scaleSpr(sprDoctor, hasDoc); scaleSpr(sprAdmin, hasAdm);
+    scaleAllSprites();
+    updateScale(window.getSize().x, window.getSize().y);
 
     sf::RectangleShape fallbackBg({ (float)window.getSize().x, (float)window.getSize().y });
     fallbackBg.setFillColor(sf::Color(8, 12, 25));
@@ -215,9 +235,9 @@ int main()
     sf::Clock cursorClock;
 
     struct AnimatedButton {
-        sf::RectangleShape first;
+        sf::RectangleShape first; // holds base size/pos for convenience
         sf::Text second;
-        float bx, by, bw, bh;
+        float bx, by, bw, bh;     // base coords (design at 1280x720)
     };
 
     // Tech Particles
@@ -261,30 +281,31 @@ int main()
         target.draw(vCore);
     };
 
-    // Bounded Input Field Helper
+    // Bounded Input Field Helper (now scales positions/sizes using scaleX/scaleY)
     auto drawInputField = [&](const char* label, const char* value, float x, float y, float w, float h, bool isFocused) {
+        float sx = scaleX, sy = scaleY;
         // Draw label
-        sf::Text lbl(font, sf::String::fromUtf8(label, label + mystrlen(label)), 18u);
+        sf::Text lbl(font, sf::String::fromUtf8(label, label + mystrlen(label)), static_cast<unsigned int>(18u * std::min(sx, sy)));
         lbl.setFillColor(sf::Color(180, 210, 255));
-        lbl.setPosition({ x, y + 6.f });
+        lbl.setPosition({ x * sx, (y + 6.f) * sy });
         window.draw(lbl);
 
         // Draw shadow under input box
-        sf::RectangleShape shadow({ w + 4.f, h + 4.f });
-        shadow.setPosition({ x + 200.f - 2.f, y - 2.f });
+        sf::RectangleShape shadow({ (w + 4.f) * sx, (h + 4.f) * sy });
+        shadow.setPosition({ (x + 200.f - 2.f) * sx, (y - 2.f) * sy });
         shadow.setFillColor(sf::Color(0, 0, 0, 90));
         window.draw(shadow);
 
         // Draw box
-        sf::RectangleShape box({ w, h });
-        box.setPosition({ x + 200.f, y });
+        sf::RectangleShape box({ w * sx, h * sy });
+        box.setPosition({ (x + 200.f) * sx, y * sy });
         box.setFillColor(sf::Color(12, 18, 32, 230)); // Sleek dark cyber card
         if (isFocused) {
             box.setOutlineColor(sf::Color(0, 255, 204)); // Glowing Neon Cyan
-            box.setOutlineThickness(2.f);
+            box.setOutlineThickness(2.f * std::min(sx, sy));
         } else {
             box.setOutlineColor(sf::Color(65, 85, 115, 160));
-            box.setOutlineThickness(1.f);
+            box.setOutlineThickness(1.f * std::min(sx, sy));
         }
         window.draw(box);
 
@@ -298,18 +319,14 @@ int main()
             }
         }
 
-        sf::Text val(font, sf::String::fromUtf8(displayVal, displayVal + mystrlen(displayVal)), 18u);
-        if (isFocused) {
-            val.setFillColor(sf::Color(255, 255, 255));
-        } else {
-            val.setFillColor(sf::Color(170, 185, 210));
-        }
-        val.setPosition({ x + 212.f, y + 6.f });
+        sf::Text val(font, sf::String::fromUtf8(displayVal, displayVal + mystrlen(displayVal)), static_cast<unsigned int>(18u * std::min(sx, sy)));
+        val.setFillColor(isFocused ? sf::Color(255, 255, 255) : sf::Color(170, 185, 210));
+        val.setPosition({ (x + 212.f) * sx, (y + 6.f) * sy });
         window.draw(val);
     };
 
     // --- Button factory ---
-    auto makeButton = [](float x, float y, float w, float h, const char* label, const sf::Font& f)
+    auto makeButton = [&](float x, float y, float w, float h, const char* label, const sf::Font& f)
     {
             sf::RectangleShape r({ w, h });
             r.setPosition({ x, y });
@@ -324,41 +341,42 @@ int main()
             return AnimatedButton{ r, t, x, y, w, h };
     };
 
+    // drawPair now computes scaled positions/sizes and draws without mutating stored base state
     auto drawPair = [&](sf::RenderTarget& target, AnimatedButton& p)
     {
+            float sx = scaleX, sy = scaleY;
             sf::Vector2i mPosI = sf::Mouse::getPosition(window);
             sf::Vector2f mPos(static_cast<float>(mPosI.x), static_cast<float>(mPosI.y));
             
-            bool hovered = p.first.getGlobalBounds().contains(mPos);
+            bool hovered = containsScaled(mPos, p.bx, p.by, p.bw, p.bh, sx, sy);
+            float dw = hovered ? p.bw * 0.05f : 0.f;
+            float dh = hovered ? p.bh * 0.05f : 0.f;
+
+            sf::RectangleShape r;
+            r.setSize({ (p.bw + dw) * sx, (p.bh + dh) * sy });
+            r.setPosition({ (p.bx - dw/2.f) * sx, (p.by - dh/2.f) * sy });
             if (hovered)
             {
-                float dw = p.bw * 0.05f; // expand 5%
-                float dh = p.bh * 0.05f;
-                p.first.setSize({ p.bw + dw, p.bh + dh });
-                p.first.setPosition({ p.bx - dw / 2.f, p.by - dh / 2.f });
-                
-                p.first.setFillColor(sf::Color(255, 0, 127, 220)); // Neon Pink background
-                p.first.setOutlineColor(sf::Color(0, 255, 255));     // Neon Cyan Border
-                p.first.setOutlineThickness(2.5f);
-                
-                p.second.setFillColor(sf::Color::White);
-                p.second.setPosition({ p.bx - dw / 2.f + 15.f, p.by - dh / 2.f + 8.f });
+                r.setFillColor(sf::Color(255, 0, 127, 220)); // Neon Pink background
+                r.setOutlineColor(sf::Color(0, 255, 255));
+                r.setOutlineThickness(2.5f * std::min(sx, sy));
             }
             else
             {
-                p.first.setSize({ p.bw, p.bh });
-                p.first.setPosition({ p.bx, p.by });
-                
-                p.first.setFillColor(sf::Color(20, 30, 50, 190));   // Indigo slate background
-                p.first.setOutlineColor(sf::Color(80, 110, 160, 150));
-                p.first.setOutlineThickness(1.5f);
-                
-                p.second.setFillColor(sf::Color(200, 220, 255));
-                p.second.setPosition({ p.bx + 15.f, p.by + 8.f });
+                r.setFillColor(sf::Color(20, 30, 50, 190));
+                r.setOutlineColor(sf::Color(80, 110, 160, 150));
+                r.setOutlineThickness(1.5f * std::min(sx, sy));
             }
-            
-            target.draw(p.first);
-            target.draw(p.second);
+
+            sf::Text t = p.second; // copy
+            unsigned int txtSize = static_cast<unsigned int>(18u * std::min(sx, sy));
+            t.setCharacterSize(txtSize);
+            t.setPosition({ (p.bx - dw/2.f + 15.f) * sx, (p.by - dh/2.f + 8.f) * sy });
+            if (hovered) t.setFillColor(sf::Color::White);
+            else t.setFillColor(sf::Color(200, 220, 255));
+
+            target.draw(r);
+            target.draw(t);
     };
 
     // --- Role select buttons ---
@@ -402,6 +420,178 @@ int main()
     auto aReport = makeButton(360.f, 380.f, 260.f, 40.f, "Daily Report", font);
     auto aLogout = makeButton(80.f, 390.f, 260.f, 40.f, "Logout", font);
 
+    // helper to run default action when Enter pressed
+    auto performDefaultAction = [&]()
+    {
+        if (state == UiState::LoginPatient || state == UiState::LoginDoctor || state == UiState::LoginAdmin)
+        {
+            int id = myatoi(idBuf);
+            bool ok = false;
+            if (state == UiState::LoginPatient) ok = tryLoginPatient(patients, id, passBuf, statusMsg, sizeof statusMsg);
+            else if (state == UiState::LoginDoctor) ok = tryLoginDoctor(doctors, id, passBuf, statusMsg, sizeof statusMsg);
+            else ok = tryLoginAdmin(admin, passBuf, statusMsg, sizeof statusMsg);
+
+            if (ok)
+            {       
+                if (state == UiState::LoginPatient) { loggedPatientId = id; refreshSessions(); state = UiState::PatientHome; }
+                else if (state == UiState::LoginDoctor) { loggedDoctorId = id; refreshSessions(); state = UiState::DoctorHome; }
+                else state = UiState::AdminHome;
+                loginFails = 0;
+                med_msgClear(statusMsg, sizeof statusMsg);
+            }
+            else
+            {
+                loginFails++;
+                char ts[48]; formatTimestampFull(ts, sizeof ts);
+                if (loginFails >= 3)
+                {
+                    char idstr[16];
+                    if (state == UiState::LoginAdmin && admin != nullptr) myitoa(admin->getId(), idstr);
+                    else myitoa(id, idstr);
+                    if (state == UiState::LoginAdmin)   fh.appendSecurityLog(ts, "Admin", idstr, "FAILED");
+                    else if (state == UiState::LoginPatient) fh.appendSecurityLog(ts, "Patient", idstr, "FAILED");
+                    else                                     fh.appendSecurityLog(ts, "Doctor", idstr, "FAILED");
+                    med_msgCat(statusMsg, sizeof statusMsg, " Account locked. Contact admin.");
+                    state = UiState::RoleSelect;
+                    loginFails = 0;
+                }
+            }
+            return;
+        }
+
+        // Submit-like states: call the same functions as mouse submit
+        if (state == UiState::PatientBook)
+        {
+            char msg[512];
+            med_guiBookAppointment(validator, fh, sessionPatient, bills, doctors, appointments,
+                specBuf, myatoi(docIdBuf), dateBuf, slotBuf, msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::PatientHome;
+            return;
+        }
+        if (state == UiState::PatientCancel)
+        {
+            char msg[512];
+            med_guiCancelAppointment(fh, sessionPatient, doctors, bills, appointments, myatoi(apptCancelBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::PatientHome;
+            return;
+        }
+        if (state == UiState::PatientPay)
+        {
+            char msg[512];
+            med_guiPayBill(validator, fh, sessionPatient, bills, myatoi(billPayBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::PatientHome;
+            return;
+        }
+        if (state == UiState::PatientTopUp)
+        {
+            char msg[512];
+            med_guiTopUp(validator, fh, sessionPatient, myatof(amountBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::PatientHome;
+            return;
+        }
+        if (state == UiState::DoctorMarkComplete)
+        {
+            char msg[512];
+            med_guiMarkComplete(fh, sessionDoctor, appointments, myatoi(apptIdBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::DoctorHome;
+            return;
+        }
+        if (state == UiState::DoctorMarkNoShow)
+        {
+            char msg[512];
+            med_guiMarkNoShow(fh, sessionDoctor, appointments, bills, myatoi(apptIdBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::DoctorHome;
+            return;
+        }
+        if (state == UiState::DoctorWritePrescription)
+        {
+            char msg[512];
+            med_guiWritePrescription(fh, sessionDoctor, appointments, prescriptions,
+                myatoi(apptIdBuf), medBuf, notesBuf, msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::DoctorHome;
+            return;
+        }
+        if (state == UiState::DoctorViewHistory)
+        {
+            med_formatPatientHistory(prescriptions, appointments, sessionDoctor,
+                myatoi(patHistIdBuf), bodyText, sizeof bodyText);
+            state = UiState::DoctorTodayAppts;
+            return;
+        }
+        if (state == UiState::AdminDischarge)
+        {
+            char msg[512];
+            med_guiDischargePatient(fh, patients, appointments, bills, prescriptions, myatoi(adminPidBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::AdminHome;
+            return;
+        }
+        if (state == UiState::AdminAddDoctor)
+        {
+            char msg[512];
+            med_guiAddDoctor(validator, fh, doctors, adName, adSpec, adContact, adPass, myatof(adFeeBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::AdminHome;
+            return;
+        }
+        if (state == UiState::AdminRemoveDoctor)
+        {
+            char msg[512];
+            med_guiRemoveDoctor(fh, doctors, appointments, myatoi(removeDocBuf), msg, sizeof msg);
+            med_msgClear(statusMsg, sizeof statusMsg);
+            med_msgCat(statusMsg, sizeof statusMsg, msg);
+            med_reloadAll(patients, prescriptions, bills, appointments, doctors, admin, fh);
+            refreshSessions(); state = UiState::AdminHome;
+            return;
+        }
+
+        // default: act as Back (go to previous / role select)
+        if (state == UiState::PatientViewAppointments || state == UiState::PatientViewRecords || state == UiState::PatientViewBills ||
+            state == UiState::DoctorTodayAppts || state == UiState::AdminPatients || state == UiState::AdminDoctors ||
+            state == UiState::AdminAppointments || state == UiState::AdminUnpaidBills || state == UiState::AdminDailyReport ||
+            state == UiState::AdminSecurityLog)
+        {
+            state = (state == UiState::DoctorTodayAppts) ? UiState::DoctorHome :
+                    (state == UiState::AdminPatients || state == UiState::AdminDoctors ||
+                     state == UiState::AdminAppointments || state == UiState::AdminUnpaidBills ||
+                     state == UiState::AdminDailyReport || state == UiState::AdminSecurityLog) ? UiState::AdminHome :
+                    UiState::PatientHome;
+            return;
+        }
+    };
+
+    auto contains = [&](sf::Vector2f p, const sf::RectangleShape& shape)
+    {
+        float sx = scaleX, sy = scaleY;
+        sf::FloatRect r({shape.getPosition().x * sx, shape.getPosition().y * sy}, {shape.getSize().x * sx, shape.getSize().y * sy});
+        return r.contains(p);
+    };
+
     // =====================================================================
     // MAIN LOOP
     while (window.isOpen())
@@ -412,6 +602,17 @@ int main()
         {
             if (event->is<sf::Event::Closed>()) { window.close(); break; }
 
+            if (const auto* resized = event->getIf<sf::Event::Resized>())
+            {
+                unsigned int w = resized->size.x;
+                unsigned int h = resized->size.y;
+                updateScale(w, h);  
+                scaleAllSprites();
+                fallbackBg.setSize({ (float)w, (float)h });
+                // adjust view so coordinates match new size
+                window.setView(sf::View(sf::FloatRect({0.f, 0.f}, {(float)w, (float)h})));
+            }
+
             // --- Mouse click ---
             if (const auto* mp = event->getIf<sf::Event::MouseButtonPressed>())
             {
@@ -421,7 +622,7 @@ int main()
                 // Role select
                 if (state == UiState::RoleSelect)
                 {
-                    if (contains(pos, btnPatient.first))
+                    if (containsScaled(pos, btnPatient.bx, btnPatient.by, btnPatient.bw, btnPatient.bh, scaleX, scaleY))
                     {
                         state = UiState::LoginPatient;
                         med_msgClear(idBuf, sizeof idBuf);
@@ -429,38 +630,38 @@ int main()
                         loginFocus = 0; loginFails = 0;
                         med_msgClear(statusMsg, sizeof statusMsg);
                     }
-                    else if (contains(pos, btnDoctor.first))
+                    else if (containsScaled(pos, btnDoctor.bx, btnDoctor.by, btnDoctor.bw, btnDoctor.bh, scaleX, scaleY))
                     {
                         state = UiState::LoginDoctor;
                         med_msgClear(idBuf, sizeof idBuf);
                         med_msgClear(passBuf, sizeof passBuf);
                         loginFocus = 0; loginFails = 0;
                     }
-                    else if (contains(pos, btnAdmin.first))
+                    else if (containsScaled(pos, btnAdmin.bx, btnAdmin.by, btnAdmin.bw, btnAdmin.bh, scaleX, scaleY))
                     {
                         state = UiState::LoginAdmin;
                         med_msgClear(passBuf, sizeof passBuf);
                         loginFails = 0;
                     }
-                    else if (contains(pos, btnExit.first))
+                    else if (containsScaled(pos, btnExit.bx, btnExit.by, btnExit.bw, btnExit.bh, scaleX, scaleY))
                         window.close();
                 }
 
                 // Login screens
                 else if (state == UiState::LoginPatient || state == UiState::LoginDoctor || state == UiState::LoginAdmin)
                 {
-                    if (contains(pos, btnBack.first))
+                    if (containsScaled(pos, btnBack.bx, btnBack.by, btnBack.bw, btnBack.bh, scaleX, scaleY))
                     {
                         state = UiState::RoleSelect;
                         loginFails = 0;
                     }
-                    else if (contains(pos, btnLogin.first))
+                    else if (containsScaled(pos, btnLogin.bx, btnLogin.by, btnLogin.bw, btnLogin.bh, scaleX, scaleY))
                     {
                         int id = myatoi(idBuf);
                         bool ok = false;
                         if (state == UiState::LoginPatient) ok = tryLoginPatient(patients, id, passBuf, statusMsg, sizeof statusMsg);
-                        else if (state == UiState::LoginDoctor)  ok = tryLoginDoctor(doctors, id, passBuf, statusMsg, sizeof statusMsg);
-                        else                                     ok = tryLoginAdmin(admin, passBuf, statusMsg, sizeof statusMsg);
+                        else if (state == UiState::LoginDoctor) ok = tryLoginDoctor(doctors, id, passBuf, statusMsg, sizeof statusMsg);
+                        else ok = tryLoginAdmin(admin, passBuf, statusMsg, sizeof statusMsg);
 
                         if (ok)
                         {
@@ -957,15 +1158,23 @@ int main()
                     appendTypedChar(removeDocBuf, sizeof removeDocBuf, c);
             }
 
-            // --- Key press (Tab / Backspace) ---
+            // --- Key press (Tab / Backspace / Enter) ---
             if (const auto* key = event->getIf<sf::Event::KeyPressed>())
             {
+                bool shift = key->shift;
                 if (key->code == sf::Keyboard::Key::Tab)
                 {
                     if (state == UiState::LoginPatient || state == UiState::LoginDoctor) loginFocus = loginFocus == 0 ? 1 : 0;
                     else if (state == UiState::PatientBook)          bookFocus = (bookFocus + 1) % 4;
                     else if (state == UiState::AdminAddDoctor)       bookFocus = (bookFocus + 1) % 5;
                     else if (state == UiState::DoctorWritePrescription) bookFocus = (bookFocus + 1) % 3;
+                    if (shift) {
+                        // simple reversal: repeat to move backwards once
+                        if (state == UiState::PatientBook) bookFocus = (bookFocus + 3) % 4;
+                        else if (state == UiState::AdminAddDoctor) bookFocus = (bookFocus + 4) % 5;
+                        else if (state == UiState::DoctorWritePrescription) bookFocus = (bookFocus + 2) % 3;
+                        else if (state == UiState::LoginPatient || state == UiState::LoginDoctor) loginFocus = loginFocus == 0 ? 1 : 0;
+                    }
                 }
                 if (key->code == sf::Keyboard::Key::Backspace)
                 {
@@ -1004,46 +1213,50 @@ int main()
                     else if (state == UiState::DoctorViewHistory)  backspaceChar(patHistIdBuf);
                     else if (state == UiState::AdminRemoveDoctor)  backspaceChar(removeDocBuf);
                 }
+                if (key->code == sf::Keyboard::Key::Enter)
+                {
+                    performDefaultAction();
+                }
             }
         } // end event loop
 
         // -----------------------------------------------------------------
-        // DRAW BACKGROUND
-        // -----------------------------------------------------------------
-        // -----------------------------------------------------------------
-        // DRAW BACKGROUND & PARTICLES
+        // DRAW BACKGROUND & UI
         // -----------------------------------------------------------------
         window.clear(sf::Color(5, 8, 20));
+
+        // update scaled sprites in case window size changed elsewhere
+        scaleAllSprites();
 
         // Vertical background gradient
         sf::VertexArray grad(sf::PrimitiveType::TriangleStrip, 4);
         grad[0].position = { 0.f, 0.f };
         grad[0].color = sf::Color(5, 8, 20);
-        grad[1].position = { 1280.f, 0.f };
+        grad[1].position = { (float)window.getSize().x, 0.f };
         grad[1].color = sf::Color(5, 8, 20);
-        grad[2].position = { 0.f, 720.f };
+        grad[2].position = { 0.f, (float)window.getSize().y };
         grad[2].color = sf::Color(10, 20, 45);
-        grad[3].position = { 1280.f, 720.f };
+        grad[3].position = { (float)window.getSize().x, (float)window.getSize().y };
         grad[3].color = sf::Color(10, 20, 45);
         window.draw(grad);
 
-        // Tech mesh grid animation
+        // Tech mesh grid animation (positions scaled logically by using window size)
         float time = bgClock.getElapsedTime().asSeconds();
         float gridOffset = fmod(time * 15.f, 40.f);
-        for (float x = gridOffset; x < 1280.f; x += 40.f) {
-            sf::Vertex v1;
+        for (float x = gridOffset; x < (float)window.getSize().x; x += 40.f) {
+            sf::Vertex v1, v2;
             v1.position = { x, 0.f };
-            v1.color = sf::Color(0, 200, 170, 8);            sf::Vertex v2;
-            v2.position = { x, 720.f };
+            v1.color = sf::Color(0, 200, 170, 8);
+            v2.position = { x, (float)window.getSize().y };
             v2.color = sf::Color(0, 255, 204, 12);
             sf::Vertex line[2] = { v1, v2 };
             window.draw(line, 2, sf::PrimitiveType::Lines);
         }
-        for (float yVal = gridOffset; yVal < 720.f; yVal += 40.f) {
-            sf::Vertex v1;
+        for (float yVal = gridOffset; yVal < (float)window.getSize().y; yVal += 40.f) {
+            sf::Vertex v1, v2;
             v1.position = { 0.f, yVal };
-            v1.color = sf::Color(0, 200, 170, 8);            sf::Vertex v2;
-            v2.position = { 1280.f, yVal };
+            v1.color = sf::Color(0, 200, 170, 8);
+            v2.position = { (float)window.getSize().x, yVal };
             v2.color = sf::Color(0, 255, 204, 12);
             sf::Vertex line[2] = { v1, v2 };
             window.draw(line, 2, sf::PrimitiveType::Lines);
@@ -1053,10 +1266,10 @@ int main()
         float dt = 1.f / 60.f;
         for (int i = 0; i < NUM_PARTICLES; ++i) {
             particles[i].pos += particles[i].vel * dt;
-            if (particles[i].pos.x < 0.f) particles[i].pos.x = 1280.f;
-            if (particles[i].pos.x > 1280.f) particles[i].pos.x = 0.f;
-            if (particles[i].pos.y < 0.f) particles[i].pos.y = 720.f;
-            if (particles[i].pos.y > 720.f) particles[i].pos.y = 0.f;
+            if (particles[i].pos.x < 0.f) particles[i].pos.x = (float)window.getSize().x;
+            if (particles[i].pos.x > (float)window.getSize().x) particles[i].pos.x = 0.f;
+            if (particles[i].pos.y < 0.f) particles[i].pos.y = (float)window.getSize().y;
+            if (particles[i].pos.y > (float)window.getSize().y) particles[i].pos.y = 0.f;
 
             sf::CircleShape c(particles[i].radius);
             c.setPosition(particles[i].pos);
@@ -1064,7 +1277,7 @@ int main()
             window.draw(c);
         }
 
-        // Underlay images if loaded
+        // Underlay images if loaded (semi-transparent)
         if (state == UiState::RoleSelect || state == UiState::LoginPatient ||
             state == UiState::LoginDoctor || state == UiState::LoginAdmin)
         {
@@ -1100,24 +1313,27 @@ int main()
             }
         }
 
-        // Glassmorphic Container Panel
-        sf::RectangleShape glassCard({ 1200.f, 530.f });
-        glassCard.setPosition({ 40.f, 100.f });
+        // Glassmorphic Container Panel (scaled)
+        sf::RectangleShape glassCard({ 1200.f * scaleX, 530.f * scaleY });
+        glassCard.setPosition({ 40.f * scaleX, 100.f * scaleY });
         glassCard.setFillColor(sf::Color(10, 18, 35, 200));
         glassCard.setOutlineColor(sf::Color(0, 255, 204, 80));
-        glassCard.setOutlineThickness(1.5f);
+        glassCard.setOutlineThickness(1.5f * std::min(scaleX, scaleY));
         window.draw(glassCard);
 
         // Header Title, Cyber Cross Logo & Decorative Underline
+        // update title position scaled
+        title.setCharacterSize(static_cast<unsigned int>(30u * std::min(scaleX, scaleY)));
+        title.setPosition({ 100.f * scaleX, 30.f * scaleY });
         window.draw(title);
-        drawLogo(window, 65.f, 48.f);
-        sf::Text subtitle(font, "Advanced Healthcare Management Platform  |  v1.0", 14u);
+        drawLogo(window, 65.f * scaleX, 48.f * scaleY);
+        sf::Text subtitle(font, "Advanced Healthcare Management Platform  |  v1.0", static_cast<unsigned int>(14u * std::min(scaleX, scaleY)));
         subtitle.setFillColor(sf::Color(0, 180, 160, 180));
-        subtitle.setPosition({ 100.f, 62.f });
+        subtitle.setPosition({ 100.f * scaleX, 62.f * scaleY });
         window.draw(subtitle);
 
-        sf::RectangleShape headerUnderline({ 1120.f, 2.f });
-        headerUnderline.setPosition({ 80.f, 90.f });
+        sf::RectangleShape headerUnderline({ 1120.f * scaleX, 2.f * scaleY });
+        headerUnderline.setPosition({ 80.f * scaleX, 90.f * scaleY });
         headerUnderline.setFillColor(sf::Color(0, 255, 204, 150));
         window.draw(headerUnderline);
 
@@ -1159,7 +1375,7 @@ int main()
             drawPair(window, btnAdmin);
             drawPair(window, btnExit);
 
-            // right panel — system info
+            // right panel ï¿½ system info
             sf::RectangleShape rightPanel({ 740.f, 320.f });
             rightPanel.setPosition({ 420.f, 175.f });
             rightPanel.setFillColor(sf::Color(5, 12, 24, 200));
@@ -1411,7 +1627,7 @@ int main()
         {
             drawListCard();
             med_msgClear(bodyText, sizeof bodyText);
-            std::ifstream fin("security_log.txt");
+            std::ifstream fin("data/security_log.txt");
             if (fin)
             {
                 char line[500];
@@ -1429,14 +1645,13 @@ int main()
             body.setString(sf::String::fromUtf8(bodyText, bodyText + mystrlen(bodyText)));
             window.draw(body); drawPair(window, btnBack);
         }
-        sf::RectangleShape statusBar({ 1280.f, 32.f });
-        statusBar.setPosition({ 0.f, 645.f });
+        sf::RectangleShape statusBar({ (float)window.getSize().x, 32.f * scaleY });
+        statusBar.setPosition({ 0.f, (float)window.getSize().y - 32.f * scaleY });
         statusBar.setFillColor(sf::Color(5, 10, 20, 220));
         statusBar.setOutlineColor(sf::Color(0, 255, 204, 60));
-        statusBar.setOutlineThickness(1.f);
+        statusBar.setOutlineThickness(1.f * std::min(scaleX, scaleY));
         window.draw(statusBar);
 
-        // smart status color
         if (mystrlen(statusMsg) > 0)
         {
             const char* errWords[] = { "invalid", "error", "not found", "insufficient", "cannot", "denied", "locked", "failed" };
@@ -1456,9 +1671,11 @@ int main()
         }
         else
             status.setFillColor(sf::Color(0, 200, 160, 150));
-        // Status bar
+        status.setCharacterSize(static_cast<unsigned int>(18u * std::min(scaleX, scaleY)));
         status.setString(sf::String::fromUtf8(statusMsg, statusMsg + mystrlen(statusMsg)));
+        status.setPosition({ 80.f * scaleX, ((float)window.getSize().y - 24.f * scaleY) });
         window.draw(status);
+
         window.display();
     }
     

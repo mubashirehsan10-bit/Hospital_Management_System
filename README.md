@@ -88,6 +88,8 @@ All data **persists across restarts** through `.txt` file storage. Every change 
 
 ## 📁 Project Structure
 
+The repository was reorganized for clarity. Top-level layout:
+
 ```
 HospitalManagement/
 │

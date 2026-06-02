@@ -1,4 +1,4 @@
-//             Hospital Management system
+ï»¿//             Hospital Management system
 
 #include "MediCoreGuiAPI.h"
 #include "utility.h"
@@ -1003,7 +1003,7 @@ void ViewPatientMedicalHistory(Validator& v, Storage<Patient>& p, Doctor* d, Sto
 //===============================================================================================
 void DisplayAdmin()
 {
-    cout << "\nAdmin Panel  MediCore\n";
+    cout << "\nAdmin Panel ï¿½ MediCore\n";
     cout << "======================\n";
     cout << "1. Add Doctor\n";
     cout << "2. Remove Doctor\n";
@@ -1408,7 +1408,7 @@ void med_guiDischargePatient(FileHandler& fh, Storage<Patient>& patients, Storag
 		return;
 	}
 
-	ifstream finA("appointments.txt");
+	ifstream finA("data/appointments.txt");
 	if (finA)
 	{
 		char line[600];
@@ -1428,7 +1428,7 @@ void med_guiDischargePatient(FileHandler& fh, Storage<Patient>& patients, Storag
 		finA.close();
 	}
 
-	ifstream finB("bills.txt");
+	ifstream finB("data/bills.txt");
 	if (finB)
 	{
 		char line[600];
@@ -1448,7 +1448,7 @@ void med_guiDischargePatient(FileHandler& fh, Storage<Patient>& patients, Storag
 		finB.close();
 	}
 
-	ifstream finP("prescriptions.txt");
+	ifstream finP("data/prescriptions.txt");
 	if (finP)
 	{
 		char line[800];

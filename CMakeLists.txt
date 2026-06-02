@@ -10,20 +10,19 @@ list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 
 set(MEDICORE_SOURCES
-    Admin.cpp
-    Appointment.cpp
-    Backend.cpp
-    Bill.cpp
-    Doctor.cpp
-    FileHandler.cpp
-    HospitalException.cpp
-    Patient.cpp
-    Person.cpp
-    Prescription.cpp
-    utility.cpp
-    Validator.cpp
-    MediCoreGuiAPI.cpp
-    MediCoreGui.cpp
+    src/Admin.cpp
+    src/Appointment.cpp
+    src/Bill.cpp
+    src/Doctor.cpp
+    src/helpers/FileHandler.cpp
+    src/helpers/HospitalException.cpp
+    src/Patient.cpp
+    src/Person.cpp
+    src/Prescription.cpp
+    src/helpers/utility.cpp
+    src/helpers/Validator.cpp
+    src/gui/MediCoreGuiAPI.cpp
+    src/gui/MediCoreGui.cpp
 )
 
 add_executable(MediCore ${MEDICORE_SOURCES})
@@ -38,20 +37,7 @@ add_custom_command(TARGET MediCore POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/assets"
         "$<TARGET_FILE_DIR:MediCore>/assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/patients.txt" "$<TARGET_FILE_DIR:MediCore>/patients.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/doctors.txt" "$<TARGET_FILE_DIR:MediCore>/doctors.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/admin.txt" "$<TARGET_FILE_DIR:MediCore>/admin.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/appointments.txt" "$<TARGET_FILE_DIR:MediCore>/appointments.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/bills.txt" "$<TARGET_FILE_DIR:MediCore>/bills.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/prescriptions.txt" "$<TARGET_FILE_DIR:MediCore>/prescriptions.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/security_log.txt" "$<TARGET_FILE_DIR:MediCore>/security_log.txt"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/discharged.txt" "$<TARGET_FILE_DIR:MediCore>/discharged.txt"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/data"
+        "$<TARGET_FILE_DIR:MediCore>/data"
 )
